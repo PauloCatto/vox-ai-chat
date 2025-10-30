@@ -1,1 +1,51 @@
-<p>login works!</p>
+<div class="background-animation">
+  <div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%">
+      <div class="card-body">
+        <h3 class="card-title text-center mb-4">Login</h3>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <div class="mb-3">
+            <label for="email" class="form-label">Email address</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              placeholder="Enter email"
+              formControlName="email"
+            />
+            <div *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid" class="text-danger small mt-1">
+              Please enter a valid email.
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              placeholder="Password"
+              formControlName="password"
+            />
+            <div *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid" class="text-danger small mt-1">
+              Password is required.
+            </div>
+          </div>
+
+          <div class="mb-3 text-end">
+            <a routerLink="/forgot-password" class="small">Forgot password?</a>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Login</button>
+          </div>
+        </form>
+
+        <p class="text-center mt-3">
+          Don't have an account? <a routerLink="/signup">Sign up</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
