@@ -1,1 +1,23 @@
-/* You can add global styles to this file, and also import other style files */
+.background-animation {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(-45deg, #1e3c72, #2a5298, #232526, #414345);
+  background-size: 400% 400%;
+  animation: gradientAnimation 18s ease infinite;
+  color: #f5f6fa;
+}
+
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
