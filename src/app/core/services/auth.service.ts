@@ -24,4 +24,8 @@ export class AuthService {
   getUser() {
     return this.supabase.auth.getUser();
   }
+
+  async createProfile(userId: string, username: string) {
+    return this.supabase.from('profiles').insert({ id: userId, username });
+  }
 }
