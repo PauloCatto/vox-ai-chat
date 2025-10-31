@@ -1,5 +1,7 @@
 <div class="background-animation">
-  <div class="container d-flex justify-content-center align-items-center vh-100">
+  <div
+    class="container d-flex justify-content-center align-items-center vh-100"
+  >
     <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%">
       <div class="card-body">
         <h3 class="card-title text-center mb-4">Login</h3>
@@ -14,7 +16,13 @@
               placeholder="Enter email"
               formControlName="email"
             />
-            <div *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid" class="text-danger small mt-1">
+            <div
+              *ngIf="
+                loginForm.get('email')?.touched &&
+                loginForm.get('email')?.invalid
+              "
+              class="text-danger small mt-1"
+            >
               Please enter a valid email.
             </div>
           </div>
@@ -28,17 +36,40 @@
               placeholder="Password"
               formControlName="password"
             />
-            <div *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid" class="text-danger small mt-1">
+            <div
+              *ngIf="
+                loginForm.get('password')?.touched &&
+                loginForm.get('password')?.invalid
+              "
+              class="text-danger small mt-1"
+            >
               Password is required.
             </div>
           </div>
 
           <div class="mb-3 text-end">
-            <a routerLink="/forgot-password" class="small">Forgot password?</a>
+            <a routerLink="/forgot-password" class="small"
+              >Forgot password?</a
+            >
           </div>
 
-          <div class="d-grid">
-            <button type="submit" class="btn btn-primary">Login</button>
+          <!-- Mensagens de status -->
+          <div *ngIf="errorMessage" class="alert alert-danger text-center py-2">
+            {{ errorMessage }}
+          </div>
+
+          <div *ngIf="loading" class="text-center mt-2 text-muted small">
+            Logging in...
+          </div>
+
+          <div class="d-grid mt-3">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="loading || loginForm.invalid"
+            >
+              {{ loading ? 'Please wait...' : 'Login' }}
+            </button>
           </div>
         </form>
 

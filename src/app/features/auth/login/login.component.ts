@@ -6,7 +6,8 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -17,7 +18,12 @@ import { RouterModule } from '@angular/router';
 })
 export class LoginComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   loginForm!: FormGroup;
+  loading = false;
+  errorMessage = '';
 
   ngOnInit(): void {
     this.initForm();
@@ -30,13 +36,32 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
     }
 
     const { email, password } = this.loginForm.value;
-    console.log('Login attempt:', email, password);
+    this.loading = true;
+    this.errorMessage = '';
+
+    try {
+      const { data, error } = await this.authService.signIn(email, password);
+
+      if (error) {
+        this.errorMessage = error.message;
+        console.error('Login error:', error.message);
+        return;
+      }
+
+      console.log('Login successful:', data);
+      this.router.navigate(['/chat']);
+    } catch (err: any) {
+      console.error('Unexpected error:', err);
+      this.errorMessage = 'An unexpected error occurred. Please try again.';
+    } finally {
+      this.loading = false;
+    }
   }
 }
