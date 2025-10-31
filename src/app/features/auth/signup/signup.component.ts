@@ -1,7 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-signup',
@@ -12,7 +13,12 @@ import { RouterModule } from '@angular/router';
 })
 export class SignupComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   signupForm!: FormGroup;
+  loading = false;
+  errorMessage = '';
 
   ngOnInit(): void {
     this.initForm();
@@ -36,14 +42,35 @@ export class SignupComponent implements OnInit {
     return password === confirm ? null : { mismatch: true };
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.signupForm.invalid) {
       this.signupForm.markAllAsTouched();
       return;
     }
 
     const { name, email, password } = this.signupForm.value;
-    console.log('Sign Up attempt:', name, email, password);
+    this.loading = true;
+    this.errorMessage = '';
 
+    try {
+      const { data, error } = await this.authService.signUp(email, password);
+
+      if (error) {
+        this.errorMessage = error.message;
+        return;
+      }
+
+      if (!data || !data.user) return;
+
+      await this.authService.createProfile(data.user.id, name);
+
+      console.log('Sign Up successful:', data.user);
+      this.router.navigate(['/login']);
+    } catch (err: any) {
+      this.errorMessage = err.message || 'An error occurred';
+      console.error(err);
+    } finally {
+      this.loading = false;
+    }
   }
 }

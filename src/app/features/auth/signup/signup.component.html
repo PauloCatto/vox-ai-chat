@@ -6,6 +6,10 @@
       <div class="card-body">
         <h3 class="card-title text-center mb-4">Sign Up</h3>
 
+        <div *ngIf="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+
         <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
           <div class="mb-3">
             <label for="name" class="form-label">Full Name</label>
@@ -90,7 +94,9 @@
           </div>
 
           <div class="d-grid">
-            <button type="submit" class="btn btn-primary">Sign Up</button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading">
+              {{ loading ? "Creating..." : "Sign Up" }}
+            </button>
           </div>
         </form>
 
