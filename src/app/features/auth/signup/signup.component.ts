@@ -1,5 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -17,8 +22,9 @@ export class SignupComponent implements OnInit {
   private router = inject(Router);
 
   signupForm!: FormGroup;
-  loading = false;
-  errorMessage = '';
+  loading: boolean = false;
+  errorMessage: string = '';
+  showPassword: boolean = false;
 
   ngOnInit(): void {
     this.initForm();
@@ -36,7 +42,9 @@ export class SignupComponent implements OnInit {
     );
   }
 
-  private passwordMatchValidator(group: FormGroup): { [key: string]: boolean } | null {
+  private passwordMatchValidator(
+    group: FormGroup
+  ): { [key: string]: boolean } | null {
     const password = group.get('password')?.value;
     const confirm = group.get('confirmPassword')?.value;
     return password === confirm ? null : { mismatch: true };
@@ -64,7 +72,6 @@ export class SignupComponent implements OnInit {
 
       await this.authService.createProfile(data.user.id, name);
 
-      console.log('Sign Up successful:', data.user);
       this.router.navigate(['/login']);
     } catch (err: any) {
       this.errorMessage = err.message || 'An error occurred';
@@ -72,5 +79,9 @@ export class SignupComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 }

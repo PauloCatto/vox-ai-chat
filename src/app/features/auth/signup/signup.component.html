@@ -1,12 +1,29 @@
-<div class="background-animation">
+<div class="signup-wrapper d-flex flex-column flex-md-row vh-100">
   <div
-    class="container d-flex justify-content-center align-items-center vh-100"
+    class="welcome-section d-flex flex-column justify-content-center align-items-center text-center text-white p-4 flex-fill"
   >
-    <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%">
+    <h1 class="fw-bold mb-3">Create Your Account</h1>
+    <p class="lead mb-4">
+      Sign up and experience smarter conversations with Vox AI.
+    </p>
+    <img
+      src="assets/chat-illustration.svg"
+      alt="Chat illustration"
+      class="img-fluid"
+    />
+  </div>
+
+  <div
+    class="signup-section d-flex justify-content-center align-items-center flex-fill bg-light"
+  >
+    <div
+      class="card shadow-sm p-4 border-0"
+      style="max-width: 400px; width: 100%"
+    >
       <div class="card-body">
         <h3 class="card-title text-center mb-4">Sign Up</h3>
 
-        <div *ngIf="errorMessage" class="alert alert-danger">
+        <div *ngIf="errorMessage" class="alert alert-danger text-center py-2">
           {{ errorMessage }}
         </div>
 
@@ -51,15 +68,27 @@
             </div>
           </div>
 
-          <div class="mb-3">
+          <div class="mb-3 position-relative">
             <label for="password" class="form-label">Password</label>
             <input
-              type="password"
-              class="form-control"
+              [type]="showPassword ? 'text' : 'password'"
+              class="form-control pe-5"
               id="password"
               placeholder="Password"
               formControlName="password"
             />
+            <i
+              class="bi"
+              [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"
+              (click)="togglePasswordVisibility()"
+              style="
+                position: absolute;
+                right: 10px;
+                top: 38px;
+                cursor: pointer;
+                color: #6c757d;
+              "
+            ></i>
             <div
               *ngIf="
                 signupForm.get('password')?.touched &&
@@ -71,17 +100,29 @@
             </div>
           </div>
 
-          <div class="mb-3">
+          <div class="mb-3 position-relative">
             <label for="confirmPassword" class="form-label"
               >Confirm Password</label
             >
             <input
-              type="password"
-              class="form-control"
+              [type]="showPassword ? 'text' : 'password'"
+              class="form-control pe-5"
               id="confirmPassword"
               placeholder="Confirm password"
               formControlName="confirmPassword"
             />
+            <i
+              class="bi"
+              [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"
+              (click)="togglePasswordVisibility()"
+              style="
+                position: absolute;
+                right: 10px;
+                top: 38px;
+                cursor: pointer;
+                color: #6c757d;
+              "
+            ></i>
             <div
               *ngIf="
                 signupForm.hasError('mismatch') &&
