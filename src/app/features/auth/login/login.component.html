@@ -1,8 +1,25 @@
-<div class="background-animation">
+<div class="login-wrapper d-flex flex-column flex-md-row vh-100">
   <div
-    class="container d-flex justify-content-center align-items-center vh-100"
+    class="welcome-section d-flex flex-column justify-content-center align-items-center text-center text-white p-4 flex-fill"
   >
-    <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%">
+    <h1 class="fw-bold mb-3">Welcome to Vox AI Chat</h1>
+    <p class="lead mb-4">
+      Talk smarter. Your personal assistant — now more human than ever.
+    </p>
+    <img
+      src="assets/chat-illustration.svg"
+      alt="Chat illustration"
+      class="img-fluid"
+    />
+  </div>
+
+  <div
+    class="login-section d-flex justify-content-center align-items-center flex-fill bg-light"
+  >
+    <div
+      class="card shadow-sm p-4 border-0"
+      style="max-width: 400px; width: 100%"
+    >
       <div class="card-body">
         <h3 class="card-title text-center mb-4">Login</h3>
 
@@ -29,31 +46,31 @@
 
           <div class="mb-3">
             <label for="password" class="form-label">Password</label>
-            <input
-              type="password"
-              class="form-control"
-              id="password"
-              placeholder="Password"
-              formControlName="password"
-            />
-            <div
-              *ngIf="
-                loginForm.get('password')?.touched &&
-                loginForm.get('password')?.invalid
-              "
-              class="text-danger small mt-1"
-            >
-              Password is required.
+            <div class="input-group">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                class="form-control"
+                id="password"
+                placeholder="Password"
+                formControlName="password"
+              />
+              <span
+                class="input-group-text"
+                (click)="togglePasswordVisibility()"
+                style="cursor: pointer"
+              >
+                <i
+                  class="bi"
+                  [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"
+                ></i>
+              </span>
             </div>
           </div>
 
           <div class="mb-3 text-end">
-            <a routerLink="/forgot-password" class="small"
-              >Forgot password?</a
-            >
+            <a routerLink="/forgot-password" class="small">Forgot password?</a>
           </div>
 
-          <!-- Mensagens de status -->
           <div *ngIf="errorMessage" class="alert alert-danger text-center py-2">
             {{ errorMessage }}
           </div>
@@ -68,7 +85,7 @@
               class="btn btn-primary"
               [disabled]="loading || loginForm.invalid"
             >
-              {{ loading ? 'Please wait...' : 'Login' }}
+              {{ loading ? "Please wait..." : "Login" }}
             </button>
           </div>
         </form>

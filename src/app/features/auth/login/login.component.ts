@@ -22,8 +22,9 @@ export class LoginComponent implements OnInit {
   private router = inject(Router);
 
   loginForm!: FormGroup;
-  loading = false;
-  errorMessage = '';
+  loading: boolean = false;
+  showPassword: boolean = false;
+  errorMessage: string = '';
 
   ngOnInit(): void {
     this.initForm();
@@ -55,7 +56,6 @@ export class LoginComponent implements OnInit {
         return;
       }
 
-      console.log('Login successful:', data);
       this.router.navigate(['/chat']);
     } catch (err: any) {
       console.error('Unexpected error:', err);
@@ -63,5 +63,9 @@ export class LoginComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 }
