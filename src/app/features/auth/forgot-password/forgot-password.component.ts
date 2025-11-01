@@ -7,6 +7,7 @@ import {
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -17,7 +18,12 @@ import { RouterModule } from '@angular/router';
 })
 export class ForgotPasswordComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+
   forgotForm!: FormGroup;
+  loading = false;
+  successMessage = '';
+  errorMessage = '';
 
   ngOnInit(): void {
     this.initForm();
@@ -29,15 +35,31 @@ export class ForgotPasswordComponent implements OnInit {
     });
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.forgotForm.invalid) {
       this.forgotForm.markAllAsTouched();
       return;
     }
 
-    const { email } = this.forgotForm.value;
-    console.log('Request password reset for:', email);
+    this.loading = true;
+    this.successMessage = '';
+    this.errorMessage = '';
 
-    // Aqui depois integraremos com Supabase
+    const { email } = this.forgotForm.value;
+
+    try {
+      const { data, error } = await this.authService.resetPassword(email);
+      if (error) {
+        this.errorMessage = error.message;
+      } else {
+        this.successMessage =
+          'A password reset link has been sent to your email.';
+      }
+    } catch (err: any) {
+      this.errorMessage = 'Something went wrong. Please try again.';
+      console.error(err);
+    } finally {
+      this.loading = false;
+    }
   }
 }
