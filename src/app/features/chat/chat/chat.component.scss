@@ -1,77 +1,67 @@
 .chat-container {
-    height: 100vh;
-    overflow: hidden; 
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar {
-    .app-title {
-        color: #0d6efd !important;
+  min-width: 250px;
+  width: 250px;
+
+  .app-title {
+    color: #0d6efd !important;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    height: 100vh;
+    transition: left 0.3s ease-in-out;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    &.show {
+      left: 0;
     }
+  }
+
+  .chat-footer {
+    .form-control-lg {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .btn-lg {
+      font-size: 1rem;
+      padding: 0.5rem 1rem; 
+    }
+  }
+}
+
+.sidebar-toggle-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+}
+
+.main-content {
+  width: 100%;
+  overflow: hidden;
 }
 
 .conversation-list {
-    .nav-item {
-        width: 100%; 
-        max-width: 240px; 
-        
-        .nav-link {
-            padding-right: 8px; 
-            padding-left: 12px;
-
-            &.active {
-                .delete-btn {
-                    color: white !important;
-                }
-            }
+  .nav-item {
+    width: 100%;
+    max-width: 240px;
+    .nav-link {
+      padding-right: 8px;
+      padding-left: 12px;
+      &.active {
+        .delete-btn {
+          color: white !important;
         }
+      }
     }
-}
-
-.conversation-title-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding-right: 5px; 
-}
-
-.delete-btn {
-    background: none;
-    border: none;
-    line-height: 1; 
-    padding: 0;
-    color: #dc3545 !important; 
-    
-    .nav-link.active & {
-        color: white !important;
-    }
-    
-    &:hover {
-        opacity: 0.8;
-    }
-}
-
-.chat-body {
-    background: linear-gradient(135deg, #f0f2f5 0%, #e4e6eb 100%);
-    flex-grow: 1; 
-    gap: 0.5rem; 
-    padding: 15px; 
-    overflow-y: auto;
-}
-
-.chat-body .p-3 {
-    border-radius: 1rem !important; 
-}
-
-
-.chat-footer {
-    .form-control {
-        border-radius: 50px; 
-    }
-    .btn-primary {
-        border-radius: 50px; 
-    }
-}
-
-.api-error {
-    font-weight: 600;
+  }
 }

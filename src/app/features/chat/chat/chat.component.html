@@ -1,7 +1,8 @@
 <div class="chat-container d-flex vh-100">
   <div
     class="sidebar d-flex flex-column p-3 bg-light border-end"
-    style="min-width: 250px"
+    [class.show]="isSidebarVisible"
+    style="min-width: 250px; z-index: 1050"
   >
     <h5 class="app-title text-primary fw-bold mb-4">
       <i class="bi bi-chat-dots-fill me-2"></i>VoxAI Chat
@@ -74,9 +75,20 @@
   </div>
 
   <div class="main-content d-flex flex-column flex-grow-1">
-    <div class="chat-title p-3 border-bottom bg-white text-center shadow-sm">
-      <h6 class="mb-0 text-muted">
-        Conversation: <strong>{{ currentConversationTitle }}</strong>
+    <div
+      class="chat-title p-3 border-bottom bg-white shadow-sm d-flex align-items-center"
+    >
+      <button
+        class="btn btn-light d-lg-none me-3"
+        type="button"
+        (click)="toggleSidebar()"
+        aria-label="Toggle sidebar"
+      >
+        <i class="bi bi-list"></i>
+      </button>
+      <h6 class="mb-0 text-muted text-center flex-grow-1">
+        Conversa:
+        <strong>{{ currentConversationTitle || "Nenhuma" }}</strong>
       </h6>
     </div>
 
@@ -88,7 +100,7 @@
         >
           <p>
             <i class="bi bi-lightning-charge me-2"></i>Comece uma nova conversa!
-            O Gemini está pronto.
+            O VoxAi está pronto.
           </p>
         </div>
 
@@ -175,6 +187,12 @@
     </div>
   </div>
 </div>
+
+<div
+  *ngIf="isSidebarVisible"
+  class="sidebar-overlay d-lg-none"
+  (click)="toggleSidebar()"
+></div>
 
 <div
   *ngIf="showDeleteModal"

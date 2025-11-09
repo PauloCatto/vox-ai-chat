@@ -52,6 +52,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   apiError: string | null = null;
   showDeleteModal: boolean = false;
   conversationToDeleteId: string | null = null;
+  isSidebarVisible: boolean = false;
 
   private realtimeSubscription: any;
   private tempMessageIds = new Set<string>();
@@ -193,6 +194,14 @@ export class ChatComponent implements OnInit, OnDestroy {
     await this.loadMessages(id);
 
     this.listenToNewMessages();
+
+    if (window.innerWidth < 992) {
+      this.isSidebarVisible = false;
+    }
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarVisible = !this.isSidebarVisible;
   }
 
   private async loadMessages(conversationId: string): Promise<void> {
