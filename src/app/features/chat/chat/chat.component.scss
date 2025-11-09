@@ -38,20 +38,14 @@ $footer-height: 80px;
 }
 
 .conversation-title-text {
-    overflow: hidden; 
-    white-space: nowrap; 
+    overflow: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-.fixed-header-mobile {
-  z-index: 90;
-}
-
-.fixed-footer-mobile {
-  z-index: 90;
-}
 
 @media (max-width: 991.98px) {
+  
   .sidebar {
     position: fixed;
     top: 0;
@@ -74,23 +68,25 @@ $footer-height: 80px;
     z-index: 1040;
   }
   
-  .chat-title {
+  .fixed-header-mobile {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     height: $header-height;
-    padding-top: 10px !important;
+    z-index: 90;
+    padding-top: 10px !important; 
     padding-bottom: 10px !important;
   }
 
-  .chat-footer {
+  .fixed-footer-mobile {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     height: $footer-height;
-    padding-top: 10px !important;
+    z-index: 90;
+    padding-top: 10px !important; 
     padding-bottom: 10px !important;
 
     .form-control-lg {
@@ -107,5 +103,6 @@ $footer-height: 80px;
   .chat-body {
     padding-top: $header-height !important;
     padding-bottom: $footer-height !important;
+    margin: 0 !important; 
   }
 }
