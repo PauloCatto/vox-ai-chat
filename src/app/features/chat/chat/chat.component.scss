@@ -1,28 +1,77 @@
-.chat-header {
-  background-color: #0d6efd;
-  font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.chat-container {
+    height: 100vh;
+    overflow: hidden; 
+}
+
+.sidebar {
+    .app-title {
+        color: #0d6efd !important;
+    }
+}
+
+.conversation-list {
+    .nav-item {
+        width: 100%; 
+        max-width: 240px; 
+        
+        .nav-link {
+            padding-right: 8px; 
+            padding-left: 12px;
+
+            &.active {
+                .delete-btn {
+                    color: white !important;
+                }
+            }
+        }
+    }
+}
+
+.conversation-title-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 5px; 
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    line-height: 1; 
+    padding: 0;
+    color: #dc3545 !important; 
+    
+    .nav-link.active & {
+        color: white !important;
+    }
+    
+    &:hover {
+        opacity: 0.8;
+    }
 }
 
 .chat-body {
-  background: linear-gradient(135deg, #f0f2f5 0%, #e4e6eb 100%);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 15px;
-  overflow-y: auto;
+    background: linear-gradient(135deg, #f0f2f5 0%, #e4e6eb 100%);
+    flex-grow: 1; 
+    gap: 0.5rem; 
+    padding: 15px; 
+    overflow-y: auto;
 }
 
-.chat-messages {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.chat-body .p-3 {
+    border-radius: 1rem !important; 
 }
 
-.form-control {
-  border-radius: 50px;
+
+.chat-footer {
+    .form-control {
+        border-radius: 50px; 
+    }
+    .btn-primary {
+        border-radius: 50px; 
+    }
 }
 
-.btn-primary {
-  border-radius: 50px;
+.api-error {
+    font-weight: 600;
 }

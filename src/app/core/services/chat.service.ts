@@ -11,7 +11,7 @@ export class ChatService {
   private supabase = this.supabaseService.getClient();
   private http = inject(HttpClient);
   private chatApiUrl = environment.chatApiUrl;
-  private apiKey = environment.openAiApiKey;
+  private apiKey = environment.geminiApiKey;
 
   constructor(private supabaseService: SupabaseService) {}
 
@@ -20,35 +20,46 @@ export class ChatService {
   ): Promise<string> {
     if (!this.apiKey) {
       console.error('API Key for AI is missing!');
-      return 'Sorry, the AI service is not configured.';
+      throw new Error('AI service is not configured.');
     }
 
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${this.apiKey}`,
-    };
+    const mappedHistory = history.map((msg) => ({
+      role: msg.role === 'assistant' ? 'model' : msg.role,
+      parts: [{ text: msg.content }],
+    }));
 
     const body = {
-      model: 'gpt-3.5-turbo',
-      messages: history,
-      temperature: 0.7,
+      contents: mappedHistory,
+      generationConfig: {
+        temperature: 0.7,
+      },
     };
 
-    try {
-      const response: any = await lastValueFrom(
-        this.http.post(this.chatApiUrl, body, { headers })
-      );
+    const url = `${this.chatApiUrl}?key=${this.apiKey}`;
 
-      return response.choices[0].message.content.trim();
+    try {
+      const response: any = await lastValueFrom(this.http.post(url, body));
+
+      if (response?.candidates?.[0]?.content?.parts?.[0]?.text) {
+        return response.candidates[0].content.parts[0].text.trim();
+      } else {
+        console.error(
+          'Gemini API returned response without text content:',
+          response
+        );
+        throw new Error('AI response was blocked or empty.');
+      }
     } catch (error) {
-      console.error('Error calling external AI API:', error);
-      return 'Sorry, the AI is currently unavailable. Please try again later.';
+      console.error('Error calling Gemini API:', error);
+      throw error;
     }
   }
+
   createConversation(userId: string, title: string) {
     return this.supabase
       .from('conversations')
-      .insert({ user_id: userId, title });
+      .insert({ user_id: userId, title })
+      .select();
   }
 
   getConversations(userId: string) {
@@ -64,12 +75,15 @@ export class ChatService {
     role: string,
     content: string
   ) {
-    return this.supabase.from('messages').insert({
-      conversation_id: conversationId,
-      user_id: userId,
-      role,
-      content,
-    });
+    return this.supabase
+      .from('messages')
+      .insert({
+        conversation_id: conversationId,
+        user_id: userId,
+        role,
+        content,
+      })
+      .select();
   }
 
   getMessages(conversationId: string) {
@@ -80,10 +94,16 @@ export class ChatService {
       .order('created_at', { ascending: true });
   }
 
-  updateConversationTitle(conversationId: string, title: string) {
-    return this.supabase
+  async updateConversationTitle(
+    conversationId: string,
+    newTitle: string
+  ): Promise<{ data: any; error: any }> {
+    const { data, error } = await this.supabaseService
+      .getClient()
       .from('conversations')
-      .update({ title })
+      .update({ title: newTitle })
       .eq('id', conversationId);
+
+    return { data, error };
   }
 }
