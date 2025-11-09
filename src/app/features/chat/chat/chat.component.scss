@@ -1,58 +1,19 @@
+$sidebar-width: 250px;
 $header-height: 57px;
 $footer-height: 80px;
-
-.chat-container {
-  height: 100vh;
-  overflow: hidden;
-}
-
-.sidebar {
-  min-width: 250px;
-  width: 250px;
-  z-index: 1050;
-
-  .app-title {
-    color: #0d6efd !important;
-  }
-}
-
-.main-content {
-  width: 100%;
-  overflow: hidden;
-}
-
-.conversation-list {
-  .nav-item {
-    width: 100%;
-    max-width: 240px;
-    .nav-link {
-      padding-right: 8px;
-      padding-left: 12px;
-      &.active {
-        .delete-btn {
-          color: white !important;
-        }
-      }
-    }
-  }
-}
-
-.conversation-title-text {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
 
 @media (max-width: 991.98px) {
   
   .sidebar {
     position: fixed;
     top: 0;
-    left: -250px;
+    left: -$sidebar-width;
+    width: $sidebar-width;
     height: 100vh;
     transition: left 0.3s ease-in-out;
+    z-index: 1050;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    
     &.show {
       left: 0;
     }
@@ -64,6 +25,8 @@ $footer-height: 80px;
     left: 0;
     right: 0;
     bottom: 0;
+    width: 100%;
+    height: 100%; 
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1040;
   }
@@ -104,5 +67,9 @@ $footer-height: 80px;
     padding-top: $header-height !important;
     padding-bottom: $footer-height !important;
     margin: 0 !important; 
+  }
+  
+  .main-content {
+      overflow: visible;
   }
 }
