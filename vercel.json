@@ -5,15 +5,15 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "buildScripts": ["npm install", "npm run vercel:build"]
+        "buildScript": "npm run vercel:build",
+        "installCommand": "npm install --legacy-peer-deps"
       }
     }
   ],
   "routes": [
     {
-      "src": "/[^.]+",
-      "dest": "/",
-      "status": 200
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "outputDirectory": "dist/voxai-chat"
