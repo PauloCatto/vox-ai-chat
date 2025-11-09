@@ -37,6 +37,12 @@ $footer-height: 80px;
   }
 }
 
+.conversation-title-text {
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow: ellipsis;
+}
+
 .fixed-header-mobile {
   z-index: 90;
 }
