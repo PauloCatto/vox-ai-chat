@@ -1,5 +1,9 @@
 <div class="chat-container d-flex vh-100">
-  <div class="sidebar-backdrop d-lg-none" *ngIf="isSidebarVisible" (click)="toggleSidebar()"></div>
+  <div
+    class="sidebar-backdrop d-lg-none"
+    *ngIf="isSidebarVisible"
+    (click)="toggleSidebar()"
+  ></div>
 
   <div
     class="sidebar d-flex flex-column p-3 bg-light border-end"
@@ -164,8 +168,7 @@
           [disabled]="
             chatForm.invalid ||
             sending ||
-            loadingUserInfo ||
-            !currentConversationId
+            (!currentConversationId && !isNewUnsavedConversation)
           "
         >
           <i class="bi bi-send-fill"></i>
