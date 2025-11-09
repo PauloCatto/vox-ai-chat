@@ -1,9 +1,10 @@
 $sidebar-width: 250px;
 $header-height: 57px;
-$footer-height: 80px;
+$footer-height: 90px;
 
 .chat-container {
-  height: 100vh;
+  height: 100%;
+  min-height: 100vh;
   overflow: hidden;
 }
 
@@ -17,7 +18,7 @@ $footer-height: 80px;
   }
   
   .user-profile {
-      flex-shrink: 0;
+    flex-shrink: 0;
   }
 }
 
@@ -43,9 +44,9 @@ $footer-height: 80px;
 }
 
 .conversation-title-text {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 991.98px) {
@@ -54,9 +55,9 @@ $footer-height: 80px;
     top: 0;
     left: -$sidebar-width;
     width: $sidebar-width;
-    height: 100vh; 
+    height: 100vh;
     transition: left 0.3s ease-in-out;
-    z-index: 1050;
+    z-index: 2000;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     
     &.show {
@@ -94,9 +95,7 @@ $footer-height: 80px;
     right: 0;
     height: $footer-height;
     z-index: 90;
-    padding-top: 10px !important; 
-    padding-bottom: 10px !important;
-
+    
     .form-control-lg {
       font-size: 1rem;
       padding: 0.5rem 1rem;
@@ -114,5 +113,4 @@ $footer-height: 80px;
     margin: 0 !important; 
     overflow-y: auto;
   }
-  
 }
