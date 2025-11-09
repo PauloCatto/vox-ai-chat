@@ -1,8 +1,9 @@
 <div class="chat-container d-flex vh-100">
+  <div class="sidebar-backdrop d-lg-none" *ngIf="isSidebarVisible" (click)="toggleSidebar()"></div>
+
   <div
     class="sidebar d-flex flex-column p-3 bg-light border-end"
     [class.show]="isSidebarVisible"
-    style="min-width: 250px; z-index: 1050"
   >
     <h5 class="app-title text-primary fw-bold mb-4">
       <i class="bi bi-chat-dots-fill me-2"></i>VoxAI Chat
@@ -76,7 +77,7 @@
 
   <div class="main-content d-flex flex-column flex-grow-1">
     <div
-      class="chat-title p-3 border-bottom bg-white shadow-sm d-flex align-items-center"
+      class="chat-title p-3 border-bottom bg-white shadow-sm d-flex align-items-center fixed-header-mobile"
     >
       <button
         class="btn btn-light d-lg-none me-3"
@@ -142,11 +143,11 @@
       </div>
     </div>
 
-    <div class="chat-footer p-3 border-top bg-white">
+    <div class="chat-footer p-3 border-top bg-white fixed-footer-mobile">
       <form
         [formGroup]="chatForm"
         (ngSubmit)="sendMessage()"
-        class="d-flex mx-auto"
+        class="d-flex mx-auto align-items-center"
         style="max-width: 800px"
       >
         <input
@@ -178,7 +179,7 @@
         style="max-width: 800px"
       >
         <i class="bi bi-exclamation-octagon-fill me-1"></i>
-        **Erro de API:** {{ apiError }}
+        <strong>Erro de API:</strong> {{ apiError }}
       </div>
 
       <small class="d-block text-center text-muted mt-2"
@@ -187,12 +188,6 @@
     </div>
   </div>
 </div>
-
-<div
-  *ngIf="isSidebarVisible"
-  class="sidebar-overlay d-lg-none"
-  (click)="toggleSidebar()"
-></div>
 
 <div
   *ngIf="showDeleteModal"
@@ -220,7 +215,8 @@
 
       <div class="modal-body">
         <p class="mb-0">
-          {{ conversationTitleToDelete }}
+          Você tem certeza que deseja deletar a conversa:
+          {{ conversationTitleToDelete }}?
           <br />
           <strong class="text-danger"
             >Todas as mensagens serão perdidas e a ação é irreversível.</strong

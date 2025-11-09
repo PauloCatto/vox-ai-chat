@@ -138,6 +138,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.sending = true;
     this.realtimeSubscription?.unsubscribe();
     this.apiError = null;
+    this.isSidebarVisible = false;
 
     try {
       const { data, error } = await this.chatService.createConversation(

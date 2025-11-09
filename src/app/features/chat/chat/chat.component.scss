@@ -1,3 +1,6 @@
+$header-height: 57px;
+$footer-height: 80px;
+
 .chat-container {
   height: 100vh;
   overflow: hidden;
@@ -6,43 +9,11 @@
 .sidebar {
   min-width: 250px;
   width: 250px;
+  z-index: 1050;
 
   .app-title {
     color: #0d6efd !important;
   }
-}
-
-@media (max-width: 991.98px) {
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: -250px;
-    height: 100vh;
-    transition: left 0.3s ease-in-out;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    &.show {
-      left: 0;
-    }
-  }
-
-  .chat-footer {
-    .form-control-lg {
-      font-size: 1rem;
-      padding: 0.5rem 1rem;
-    }
-
-    .btn-lg {
-      font-size: 1rem;
-      padding: 0.5rem 1rem; 
-    }
-  }
-}
-
-.sidebar-toggle-btn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 1001;
 }
 
 .main-content {
@@ -63,5 +34,72 @@
         }
       }
     }
+  }
+}
+
+.fixed-header-mobile {
+  z-index: 90;
+}
+
+.fixed-footer-mobile {
+  z-index: 90;
+}
+
+@media (max-width: 991.98px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    height: 100vh;
+    transition: left 0.3s ease-in-out;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    &.show {
+      left: 0;
+    }
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+  }
+  
+  .chat-title {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: $header-height;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .chat-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: $footer-height;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+
+    .form-control-lg {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .btn-lg {
+      font-size: 1rem;
+      padding: 0.5rem 1rem; 
+    }
+  }
+
+  .chat-body {
+    padding-top: $header-height !important;
+    padding-bottom: $footer-height !important;
   }
 }
