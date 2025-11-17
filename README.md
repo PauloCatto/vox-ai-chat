@@ -32,7 +32,7 @@ Confira a aparência da aplicação nas telas de autenticação e chat:
 
 ### 2. Interface de Chat
 <br>
-<img width="1020" height="643" alt="image" src="https://github.com/user-attachments/assets/7ccf123d-534a-4be1-8733-e122d39f40da" />
+<img width="1023" height="637" alt="image" src="https://github.com/user-attachments/assets/65475e52-1f4a-471e-8184-1c2f337f19ed" />
 <br>
 
 ---
