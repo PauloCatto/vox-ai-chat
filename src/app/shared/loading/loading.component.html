@@ -1,0 +1,21 @@
+<div
+  class="d-flex flex-column align-items-center justify-content-center"
+  [class.position-fixed]="fullscreen"
+  [class.top-0]="fullscreen"
+  [class.start-0]="fullscreen"
+  [class.w-100]="fullscreen"
+  [class.h-100]="fullscreen"
+  style="z-index: 1055"
+>
+  <div
+    class="spinner-border text-primary"
+    [ngClass]="{
+      'spinner-border-sm': size === 'sm'
+    }"
+    role="status"
+  ></div>
+
+  <small class="mt-2 text-muted" *ngIf="text">
+    {{ text }}
+  </small>
+</div>
