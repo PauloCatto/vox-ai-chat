@@ -1,0 +1,58 @@
+<div
+  class="modal fade show d-block"
+  tabindex="-1"
+  role="dialog"
+  style="background-color: rgba(0, 0, 0, 0.5)"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div
+        class="modal-header"
+        [ngClass]="danger ? 'bg-danger text-white' : 'bg-primary text-white'"
+      >
+        <h5 class="modal-title">
+          <i
+            class="bi me-2"
+            [ngClass]="
+              danger ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill'
+            "
+          ></i>
+          {{ title }}
+        </h5>
+
+        <button
+          type="button"
+          class="btn-close"
+          [ngClass]="danger ? 'btn-close-white' : ''"
+          aria-label="Close"
+          (click)="cancel.emit()"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-0" [innerHTML]="message"></p>
+      </div>
+
+      <div class="modal-footer" *ngIf="showActions">
+        <button type="button" class="btn btn-secondary" (click)="cancel.emit()">
+          {{ cancelText }}
+        </button>
+
+        <button
+          type="button"
+          class="btn"
+          [ngClass]="danger ? 'btn-danger' : 'btn-primary'"
+          (click)="confirm.emit()"
+          [disabled]="confirmLoading"
+        >
+          <span
+            *ngIf="confirmLoading"
+            class="spinner-border spinner-border-sm me-1"
+          ></span>
+
+          {{ confirmLoading ? "Processing..." : confirmText }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

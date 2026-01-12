@@ -192,65 +192,19 @@
   </div>
 </div>
 
-<div
+<app-modal
   *ngIf="showDeleteModal"
-  class="modal fade show d-block"
-  tabindex="-1"
-  aria-labelledby="deleteModalLabel"
-  aria-modal="true"
-  role="dialog"
-  style="background-color: rgba(0, 0, 0, 0.5)"
->
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="deleteModalLabel">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmation
-          Required
-        </h5>
-        <button
-          type="button"
-          class="btn-close btn-close-white"
-          aria-label="Close"
-          (click)="closeDeleteConfirmation()"
-        ></button>
-      </div>
-
-      <div class="modal-body">
-        <p class="mb-0">
-          Are you sure you want to delete the conversation:
-          {{ conversationTitleToDelete }}?
-          <br />
-          <strong class="text-danger"
-            >All messages will be lost and the action is irreversible.</strong
-          >
-        </p>
-      </div>
-
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          (click)="closeDeleteConfirmation()"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger"
-          (click)="confirmDeleteConversation()"
-          [disabled]="sending"
-        >
-          <span
-            *ngIf="sending"
-            class="spinner-border spinner-border-sm me-1"
-            role="status"
-            aria-hidden="true"
-          ></span>
-          <i *ngIf="!sending" class="bi bi-trash-fill me-1"></i>
-          {{ sending ? "Deleting..." : "Delete" }}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+  [title]="'Confirmation Required'"
+  [message]="
+    'Are you sure you want to delete the conversation: <strong>' +
+    conversationTitleToDelete +
+    '</strong>?<br/><strong class=\'text-danger\'>All messages will be lost and the action is irreversible.</strong>'
+  "
+  [danger]="true"
+  [showActions]="true"
+  [confirmText]="'Delete'"
+  [cancelText]="'Cancel'"
+  [confirmLoading]="sending"
+  (cancel)="closeDeleteConfirmation()"
+  (confirm)="confirmDeleteConversation()"
+></app-modal>
