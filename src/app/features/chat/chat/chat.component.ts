@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { ChatService } from '../../../core/services/chat.service';
+import { ModalComponent } from '@shared/modal/modal.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 interface Message {
   id: string;
@@ -29,7 +31,7 @@ interface Conversation {
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DatePipe],
+  imports: [CommonModule, ReactiveFormsModule, DatePipe, ModalComponent],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
 })
@@ -39,6 +41,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private chatService = inject(ChatService);
   private supabaseService = inject(SupabaseService);
+  private modalService = inject(NgbModal);
 
   chatForm!: FormGroup;
   userFullName: string = 'Loading...';
@@ -359,9 +362,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     this.closeDeleteConfirmation();
 
-    if (!conversationId) {
-      return;
-    }
+    if (!conversationId) return;
 
     this.sending = true;
 
@@ -400,10 +401,39 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   async logout(): Promise<void> {
     try {
+      const modalRef = this.modalService.open(ModalComponent, {
+        centered: true,
+        backdrop: 'static',
+        keyboard: false,
+      });
+
+      modalRef.componentInstance.title = 'Confirm Logout';
+      modalRef.componentInstance.message =
+        'Are you sure you want to log out?<br/><strong>Your session will be closed.</strong>';
+      modalRef.componentInstance.confirmText = 'Logout';
+      modalRef.componentInstance.cancelText = 'Cancel';
+      modalRef.componentInstance.danger = true;
+      modalRef.componentInstance.showActions = true;
+
+      const confirmed = await modalRef.result;
+      if (!confirmed) return;
+
       await this.authService.signOut();
       this.router.navigate(['/login']);
     } catch (error) {
+      if (error === 'cancel') return;
+
       console.error('Logout failed:', error);
+
+      const errorRef = this.modalService.open(ModalComponent, {
+        centered: true,
+      });
+
+      errorRef.componentInstance.title = 'Logout Failed';
+      errorRef.componentInstance.message =
+        'An error occurred while logging out.<br/><strong>Please try again.</strong>';
+      errorRef.componentInstance.showActions = false;
+      errorRef.componentInstance.danger = true;
     }
   }
 

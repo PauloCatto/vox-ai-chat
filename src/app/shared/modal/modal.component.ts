@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-modal',
@@ -17,8 +18,13 @@ export class ModalComponent {
   @Input() confirmLoading = false;
   @Input() danger = false;
 
-  @Output() confirm = new EventEmitter<void>();
-  @Output() cancel = new EventEmitter<void>();
+  constructor(public activeModal: NgbActiveModal) {}
 
-  constructor() {}
+  confirm(): void {
+    this.activeModal.close(true);
+  }
+
+  cancel(): void {
+    this.activeModal.dismiss('cancel');
+  }
 }
