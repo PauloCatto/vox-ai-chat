@@ -91,9 +91,11 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   private async initializeChat(): Promise<void> {
     this.loadingUserInfo = true;
+
     try {
       const { data: userData, error } = await this.authService.getUser();
       if (error) throw error;
+
       const user = userData.user;
 
       if (!user) {
@@ -103,7 +105,9 @@ export class ChatComponent implements OnInit, OnDestroy {
 
       this.currentUserId = user.id;
       this.userFullName =
-        user.user_metadata['full_name'] || user.email || 'User';
+        user.user_metadata?.['full_name'] || user.email || 'User';
+
+      this.loadingUserInfo = false;
 
       await this.loadConversations();
 
@@ -113,12 +117,8 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.selectConversation(this.conversations[0].id);
       }
     } catch (error) {
-      console.error(
-        'Error initializing chat. The Send button may be disabled if no conversation ID could be established:',
-        error
-      );
+      console.error('Error initializing chat:', error);
       this.userFullName = 'Error Loading User';
-    } finally {
       this.loadingUserInfo = false;
     }
   }

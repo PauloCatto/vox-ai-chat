@@ -69,7 +69,7 @@
           class="user-name text-truncate"
           title="{{ userFullName || 'Logged User' }}"
         >
-          {{ userFullName || "Loading User..." }}
+          {{ loadingUserInfo ? "Loading User..." : userFullName }}
         </strong>
       </div>
 
