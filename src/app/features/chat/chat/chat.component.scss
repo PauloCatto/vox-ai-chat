@@ -47,6 +47,7 @@ $sidebar-width: 280px;
   display: flex;
   flex-direction: column;
   height: 100%;
+  width: 100%;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -63,18 +64,21 @@ $sidebar-width: 280px;
     flex: 1 1 auto;
     overflow-y: auto;
     min-height: 0;
-    -webkit-overflow-scrolling: touch;
     padding: 1rem;
+    padding-bottom: 90px;
+    -webkit-overflow-scrolling: touch;
   }
 
   .chat-footer {
-    flex: 0 0 auto;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     background: white !important;
     border-top: 1px solid #dee2e6;
     padding: 1rem;
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     z-index: 120;
-    width: 100%;
 
     form {
       display: flex;
@@ -95,6 +99,8 @@ $sidebar-width: 280px;
   overflow-y: auto;
   line-height: 1.5;
   flex: 1;
+  background: white !important;
+  color: black !important;
 }
 
 .message-bubble {

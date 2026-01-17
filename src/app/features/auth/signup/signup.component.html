@@ -1,30 +1,30 @@
-<div class="signup-wrapper d-flex flex-column flex-md-row vh-100">
-  <div
-    class="welcome-section d-flex flex-column justify-content-center align-items-center text-center text-white p-4 flex-fill"
-  >
-    <h1 class="fw-bold mb-3">Create Your Account</h1>
-    <p class="lead mb-4">
-      Sign up and experience smarter conversations with Vox AI.
-    </p>
-    <img
-      src="assets/chat-illustration.svg"
-      alt="Chat illustration"
-      class="img-fluid"
-    />
+<div class="signup-wrapper">
+  <div class="welcome-section d-none d-md-flex">
+    <div class="content-fade-in">
+      <h1 class="fw-bold mb-3">Create Your Account</h1>
+      <p class="lead mb-4">
+        Sign up and experience smarter conversations with Vox AI.
+      </p>
+      <img
+        src="assets/chat-illustration.svg"
+        alt="Chat illustration"
+        class="img-fluid floating-anim"
+      />
+    </div>
   </div>
 
-  <div
-    class="signup-section d-flex justify-content-center align-items-center flex-fill bg-light position-relative"
-  >
+  <div class="signup-section">
+    <img
+      src="assets/chat-illustration.svg"
+      alt="Background Decor"
+      class="bg-decor d-md-none floating-anim"
+    />
+
     <app-loading *ngIf="loading"></app-loading>
 
-    <div
-      class="card shadow-sm p-4 border-0"
-      style="max-width: 400px; width: 100%"
-      [class.opacity-50]="loading"
-    >
+    <div class="card shadow-lg p-4 border-0 glass-card" [class.opacity-50]="loading">
       <div class="card-body">
-        <h3 class="card-title text-center mb-4">Sign Up</h3>
+        <h3 class="card-title text-center mb-4 fw-bold">Sign Up</h3>
 
         <div *ngIf="errorMessage" class="alert alert-danger text-center py-2">
           {{ errorMessage }}
@@ -35,16 +35,13 @@
             <label for="name" class="form-label">Full Name</label>
             <input
               type="text"
-              class="form-control"
+              class="form-control custom-input"
               id="name"
               placeholder="Enter your full name"
               formControlName="name"
             />
             <div
-              *ngIf="
-                signupForm.get('name')?.touched &&
-                signupForm.get('name')?.invalid
-              "
+              *ngIf="signupForm.get('name')?.touched && signupForm.get('name')?.invalid"
               class="text-danger small mt-1"
             >
               Name is required.
@@ -55,16 +52,13 @@
             <label for="email" class="form-label">Email address</label>
             <input
               type="email"
-              class="form-control"
+              class="form-control custom-input"
               id="email"
               placeholder="Enter email"
               formControlName="email"
             />
             <div
-              *ngIf="
-                signupForm.get('email')?.touched &&
-                signupForm.get('email')?.invalid
-              "
+              *ngIf="signupForm.get('email')?.touched && signupForm.get('email')?.invalid"
               class="text-danger small mt-1"
             >
               Please enter a valid email.
@@ -75,7 +69,7 @@
             <label for="password" class="form-label">Password</label>
             <input
               [type]="showPassword ? 'text' : 'password'"
-              class="form-control pe-5"
+              class="form-control custom-input pe-5"
               id="password"
               placeholder="Password"
               formControlName="password"
@@ -84,19 +78,10 @@
               class="bi"
               [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"
               (click)="togglePasswordVisibility()"
-              style="
-                position: absolute;
-                right: 10px;
-                top: 38px;
-                cursor: pointer;
-                color: #6c757d;
-              "
+              style="position: absolute; right: 15px; top: 38px; cursor: pointer; color: #6c757d;"
             ></i>
             <div
-              *ngIf="
-                signupForm.get('password')?.touched &&
-                signupForm.get('password')?.invalid
-              "
+              *ngIf="signupForm.get('password')?.touched && signupForm.get('password')?.invalid"
               class="text-danger small mt-1"
             >
               Password is required.
@@ -104,48 +89,32 @@
           </div>
 
           <div class="mb-3 position-relative">
-            <label for="confirmPassword" class="form-label"
-              >Confirm Password</label
-            >
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
             <input
               [type]="showPassword ? 'text' : 'password'"
-              class="form-control pe-5"
+              class="form-control custom-input pe-5"
               id="confirmPassword"
               placeholder="Confirm password"
               formControlName="confirmPassword"
             />
-            <i
-              class="bi"
-              [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"
-              (click)="togglePasswordVisibility()"
-              style="
-                position: absolute;
-                right: 10px;
-                top: 38px;
-                cursor: pointer;
-                color: #6c757d;
-              "
-            ></i>
             <div
-              *ngIf="
-                signupForm.hasError('mismatch') &&
-                signupForm.get('confirmPassword')?.touched
-              "
+              *ngIf="signupForm.hasError('mismatch') && signupForm.get('confirmPassword')?.touched"
               class="text-danger small mt-1"
             >
               Passwords do not match.
             </div>
           </div>
 
-          <div class="d-grid">
-            <button type="submit" class="btn btn-primary" [disabled]="loading">
-              Sign Up
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-primary btn-lg shadow-sm" [disabled]="loading || signupForm.invalid">
+              {{ loading ? "Creating account..." : "Sign Up" }}
             </button>
           </div>
         </form>
 
-        <p class="text-center mt-3">
-          Already have an account? <a routerLink="/login">Login</a>
+        <p class="text-center mt-4 mb-0">
+          Already have an account? 
+          <a routerLink="/login" class="fw-bold text-decoration-none">Login</a>
         </p>
       </div>
     </div>
