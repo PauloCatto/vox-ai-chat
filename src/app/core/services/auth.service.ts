@@ -31,7 +31,7 @@ export class AuthService {
 
   async resetPassword(email: string) {
     return this.supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: 'https://vox-ai-chat.vercel.app/reset-password',
     });
   }
 
