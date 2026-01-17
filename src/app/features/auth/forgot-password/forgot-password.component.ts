@@ -8,11 +8,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { LoadingComponent } from "@shared/loading/loading.component";
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, LoadingComponent],
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.scss'],
 })
@@ -21,7 +22,10 @@ export class ForgotPasswordComponent implements OnInit {
   private authService = inject(AuthService);
 
   forgotForm!: FormGroup;
+
   loading = false;
+  private loadingTimer: any;
+
   successMessage = '';
   errorMessage = '';
 
@@ -41,24 +45,31 @@ export class ForgotPasswordComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
     this.successMessage = '';
     this.errorMessage = '';
+
+    this.loadingTimer = setTimeout(() => {
+      this.loading = true;
+    }, 300);
 
     const { email } = this.forgotForm.value;
 
     try {
-      const { data, error } = await this.authService.resetPassword(email);
+      const { error } = await this.authService.resetPassword(email);
+
       if (error) {
         this.errorMessage = error.message;
-      } else {
-        this.successMessage =
-          'A password reset link has been sent to your email.';
+        return;
       }
-    } catch (err: any) {
-      this.errorMessage = 'Something went wrong. Please try again.';
+
+      this.successMessage =
+        'A password reset link has been sent to your email.';
+      this.forgotForm.reset();
+    } catch (err) {
       console.error(err);
+      this.errorMessage = 'Something went wrong. Please try again.';
     } finally {
+      clearTimeout(this.loadingTimer);
       this.loading = false;
     }
   }
