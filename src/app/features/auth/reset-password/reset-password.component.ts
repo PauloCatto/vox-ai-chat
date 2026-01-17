@@ -8,11 +8,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { SupabaseService } from '../../../core/services/supabase.service';
+import { LoadingComponent } from '../../../shared/loading/loading.component';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, LoadingComponent],
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss'],
 })
@@ -21,7 +22,7 @@ export class ResetPasswordComponent implements OnInit {
   private router = inject(Router);
   private supabaseService = inject(SupabaseService);
 
-  resetForm: FormGroup = new FormGroup({});
+  resetForm!: FormGroup;
   loading: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
@@ -30,13 +31,7 @@ export class ResetPasswordComponent implements OnInit {
   private accessToken: string | null = null;
 
   ngOnInit(): void {
-    const urlParams = new URLSearchParams(window.location.search);
-    this.accessToken = urlParams.get('access_token');
-
-    if (!this.accessToken && window.location.hash) {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      this.accessToken = hashParams.get('access_token');
-    }
+    this.extractAccessToken();
 
     if (!this.accessToken) {
       this.errorMessage = 'Invalid or expired reset link.';
@@ -44,10 +39,20 @@ export class ResetPasswordComponent implements OnInit {
       return;
     }
 
-    this.initForm(false);
+    this.initForm();
   }
 
-  initForm(isDisabled: boolean = false): void {
+  private extractAccessToken(): void {
+    const urlParams = new URLSearchParams(window.location.search);
+    this.accessToken = urlParams.get('access_token');
+
+    if (!this.accessToken && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      this.accessToken = hashParams.get('access_token');
+    }
+  }
+
+  initForm(disabled = false): void {
     this.resetForm = this.fb.group(
       {
         password: ['', [Validators.required, Validators.minLength(6)]],
@@ -56,12 +61,12 @@ export class ResetPasswordComponent implements OnInit {
       { validators: this.passwordsMatch }
     );
 
-    if (isDisabled) {
+    if (disabled) {
       this.resetForm.disable();
     }
   }
 
-  passwordsMatch(group: FormGroup) {
+  passwordsMatch(group: FormGroup): { [key: string]: any } | null {
     const pass = group.get('password')?.value;
     const confirm = group.get('confirmPassword')?.value;
     return pass === confirm ? null : { mismatch: true };
@@ -72,12 +77,10 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   async onSubmit(): Promise<void> {
-    if (this.resetForm.invalid) {
+    if (this.resetForm.invalid || !this.accessToken) {
       this.resetForm.markAllAsTouched();
       return;
     }
-
-    if (!this.accessToken) return;
 
     this.loading = true;
     this.errorMessage = '';
@@ -97,7 +100,10 @@ export class ResetPasswordComponent implements OnInit {
 
       this.successMessage =
         'Password updated successfully. Redirecting to login...';
-      setTimeout(() => this.router.navigate(['/login']), 2000);
+
+      setTimeout(() => {
+        this.router.navigate(['/login']);
+      }, 2000);
     } catch (error: any) {
       this.errorMessage = error.message || 'Error updating password';
     } finally {
