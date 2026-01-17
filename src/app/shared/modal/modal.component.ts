@@ -7,11 +7,11 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './modal.component.html',
-  styleUrl: './modal.component.scss',
+  styleUrls: ['./modal.component.scss'],
 })
 export class ModalComponent {
-  @Input() title = '';
-  @Input() message = '';
+  @Input() title!: string;
+  @Input() message!: string;
   @Input() showActions = true;
   @Input() confirmText = 'Confirm';
   @Input() cancelText = 'Cancel';
@@ -19,12 +19,4 @@ export class ModalComponent {
   @Input() danger = false;
 
   constructor(public activeModal: NgbActiveModal) {}
-
-  confirm(): void {
-    this.activeModal.close(true);
-  }
-
-  cancel(): void {
-    this.activeModal.dismiss('cancel');
-  }
 }
