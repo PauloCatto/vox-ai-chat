@@ -69,4 +69,18 @@ export class LoginComponent implements OnInit {
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
+
+  async loginWithGoogle(): Promise<void> {
+    this.loading = true;
+    this.errorMessage = '';
+
+    try {
+      await this.authService.signInWithGoogle();
+    } catch (err: any) {
+      console.error('Google login failed:', err);
+      this.errorMessage =
+        err.message || 'Google login failed. Please try again.';
+      this.loading = false;
+    }
+  }
 }

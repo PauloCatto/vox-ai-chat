@@ -54,4 +54,14 @@ export class AuthService {
   async updatePassword(newPassword: string) {
     return this.supabase.auth.updateUser({ password: newPassword });
   }
+
+  async signInWithGoogle() {
+    const { data, error } = await this.supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/chat',
+      },
+    });
+    if (error) console.error(error);
+  }
 }
