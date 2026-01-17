@@ -8,11 +8,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { LoadingComponent } from '@shared/loading/loading.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, LoadingComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
@@ -44,20 +45,20 @@ export class LoginComponent implements OnInit {
     }
 
     const { email, password } = this.loginForm.value;
+
     this.loading = true;
     this.errorMessage = '';
 
     try {
-      const { data, error } = await this.authService.signIn(email, password);
+      const { error } = await this.authService.signIn(email, password);
 
       if (error) {
         this.errorMessage = error.message;
-        console.error('Login error:', error.message);
         return;
       }
 
       this.router.navigate(['/chat']);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Unexpected error:', err);
       this.errorMessage = 'An unexpected error occurred. Please try again.';
     } finally {

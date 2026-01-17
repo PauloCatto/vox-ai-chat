@@ -75,9 +75,7 @@
             {{ errorMessage }}
           </div>
 
-          <div *ngIf="loading" class="text-center mt-2 text-muted small">
-            Logging in...
-          </div>
+          <app-loading *ngIf="loading"></app-loading>
 
           <div class="d-grid mt-3">
             <button
