@@ -8,11 +8,17 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { LoadingComponent } from "@shared/loading/loading.component";
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    LoadingComponent
+],
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss'],
 })
@@ -22,15 +28,15 @@ export class SignupComponent implements OnInit {
   private router = inject(Router);
 
   signupForm!: FormGroup;
-  loading: boolean = false;
-  errorMessage: string = '';
-  showPassword: boolean = false;
+  loading = false;
+  errorMessage = '';
+  showPassword = false;
 
   ngOnInit(): void {
     this.initForm();
   }
 
-  initForm(): void {
+  private initForm(): void {
     this.signupForm = this.fb.group(
       {
         name: ['', Validators.required],
@@ -51,14 +57,16 @@ export class SignupComponent implements OnInit {
   }
 
   async onSubmit(): Promise<void> {
-    if (this.signupForm.invalid) {
+    if (this.signupForm.invalid || this.loading) {
       this.signupForm.markAllAsTouched();
       return;
     }
 
     const { name, email, password } = this.signupForm.value;
+
     this.loading = true;
     this.errorMessage = '';
+    this.signupForm.disable();
 
     try {
       const { data, error } = await this.authService.signUp(email, password);
@@ -68,16 +76,16 @@ export class SignupComponent implements OnInit {
         return;
       }
 
-      if (!data || !data.user) return;
+      if (!data?.user) return;
 
       await this.authService.createProfile(data.user.id, name);
 
       this.router.navigate(['/login']);
     } catch (err: any) {
-      this.errorMessage = err.message || 'An error occurred';
-      console.error(err);
+      this.errorMessage = err?.message || 'An unexpected error occurred';
     } finally {
       this.loading = false;
+      this.signupForm.enable();
     }
   }
 
