@@ -1,7 +1,7 @@
-<div class="login-wrapper d-flex flex-column flex-md-row vh-100">
-  <div
-    class="welcome-section d-flex flex-column justify-content-center align-items-center text-center text-white p-4 flex-fill"
-  >
+<div class="login-wrapper d-flex flex-column flex-md-row">
+  <div class="sidebar-backdrop d-lg-none" *ngIf="false"></div>
+
+  <div class="welcome-section">
     <h1 class="fw-bold mb-3">Welcome to Vox AI Chat</h1>
     <p class="lead mb-4">
       Talk smarter. Your personal assistant — now more human than ever.
@@ -13,13 +13,8 @@
     />
   </div>
 
-  <div
-    class="login-section d-flex justify-content-center align-items-center flex-fill bg-light"
-  >
-    <div
-      class="card shadow-sm p-4 border-0"
-      style="max-width: 400px; width: 100%"
-    >
+  <div class="login-section">
+    <div class="card shadow-sm p-4 border-0">
       <div class="card-body">
         <h3 class="card-title text-center mb-4">Login</h3>
 
@@ -68,7 +63,9 @@
           </div>
 
           <div class="mb-3 text-end">
-            <a routerLink="/forgot-password" class="small">Forgot password?</a>
+            <a routerLink="/forgot-password" class="small text-decoration-none"
+              >Forgot password?</a
+            >
           </div>
 
           <div *ngIf="errorMessage" class="alert alert-danger text-center py-2">
@@ -80,44 +77,39 @@
           <div class="d-grid mt-3">
             <button
               type="submit"
-              class="btn btn-primary"
+              class="btn btn-primary btn-lg"
               [disabled]="loading || loginForm.invalid"
             >
               {{ loading ? "Please wait..." : "Login" }}
             </button>
           </div>
 
-          <hr class="my-3" />
+          <div class="position-relative my-4">
+            <hr />
+            <span
+              class="position-absolute top-50 start-50 translate-middle bg-light px-2 text-muted small"
+              >OR</span
+            >
+          </div>
 
           <div class="d-grid">
             <button
               type="button"
-              class="btn btn-outline-dark"
+              class="btn btn-outline-dark d-flex align-items-center justify-content-center"
               (click)="loginWithGoogle()"
               [disabled]="loading"
             >
-              <i class="bi bi-google me-2">
-                <style>
-                  .bi-google {
-                    background: linear-gradient(
-                      to right,
-                      #4285f4 25%,
-                      #ea4335 25% 50%,
-                      #fbbc05 50% 75%,
-                      #34a853 75%
-                    );
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                  }
-                </style>
-              </i>
+              <i class="bi bi-google me-2"></i>
               Login with Google
             </button>
           </div>
         </form>
 
-        <p class="text-center mt-3">
-          Don't have an account? <a routerLink="/signup">Sign up</a>
+        <p class="text-center mt-4 mb-0">
+          Don't have an account?
+          <a routerLink="/signup" class="fw-bold text-decoration-none"
+            >Sign up</a
+          >
         </p>
       </div>
     </div>
