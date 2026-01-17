@@ -47,19 +47,20 @@ $sidebar-width: 280px;
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-width: 0;
   min-height: 0;
   overflow: hidden;
   position: relative;
   background: #f8f9fa;
 
   .chat-header {
-    flex-shrink: 0;
+    flex: 0 0 auto;
     background: white;
     z-index: 110;
   }
 
   .chat-body {
-    flex: 1;
+    flex: 1 1 auto;
     overflow-y: auto;
     min-height: 0;
     -webkit-overflow-scrolling: touch;
@@ -67,7 +68,7 @@ $sidebar-width: 280px;
   }
 
   .chat-footer {
-    flex-shrink: 0;
+    flex: 0 0 auto;
     background: white !important;
     border-top: 1px solid #dee2e6;
     padding: 1rem;
@@ -93,6 +94,7 @@ $sidebar-width: 280px;
   padding: 10px 15px;
   overflow-y: auto;
   line-height: 1.5;
+  flex: 1;
 }
 
 .message-bubble {
