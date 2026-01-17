@@ -10,8 +10,8 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { ChatService } from '../../../core/services/chat.service';
-import { ModalComponent } from '@shared/modal/modal.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ModalComponent } from '@shared/modal/modal.component';
 
 interface Message {
   id: string;
@@ -31,7 +31,7 @@ interface Conversation {
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DatePipe, ModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, DatePipe],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
 })
@@ -445,5 +445,11 @@ export class ChatComponent implements OnInit, OnDestroy {
       (c) => c.id === this.conversationToDeleteId
     );
     return conv ? conv.title : 'This Conversation';
+  }
+
+  adjustHeight(event: any): void {
+    const element = event.target;
+    element.style.height = 'auto';
+    element.style.height = element.scrollHeight + 'px';
   }
 }
