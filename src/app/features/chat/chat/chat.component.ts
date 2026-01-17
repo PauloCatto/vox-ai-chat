@@ -77,15 +77,18 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
   }
 
-  private scrollToBottom(): void {
+  private scrollToLastMessage(): void {
     setTimeout(() => {
-      const chatBody = document.querySelector('.chat-body');
-      if (chatBody) {
-        requestAnimationFrame(() => {
+      const lastMsgElement = document.getElementById('last-msg');
+      if (lastMsgElement) {
+        lastMsgElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        const chatBody = document.querySelector('.chat-body');
+        if (chatBody) {
           chatBody.scrollTop = chatBody.scrollHeight;
-        });
+        }
       }
-    }, 50);
+    }, 100);
   }
 
   private async initializeChat(): Promise<void> {
@@ -99,7 +102,8 @@ export class ChatComponent implements OnInit, OnDestroy {
         return;
       }
       this.currentUserId = user.id;
-      this.userFullName = user.user_metadata?.['full_name'] || user.email || 'User';
+      this.userFullName =
+        user.user_metadata?.['full_name'] || user.email || 'User';
       this.loadingUserInfo = false;
       await this.loadConversations();
       if (this.conversations.length === 0) {
@@ -115,14 +119,18 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   async loadConversations(): Promise<void> {
-    const { data, error } = await this.chatService.getConversations(this.currentUserId);
+    const { data, error } = await this.chatService.getConversations(
+      this.currentUserId
+    );
     if (error) {
       console.error('Error loading conversations:', error);
       return;
     }
-    this.conversations = (data as Conversation[]).sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    ) || [];
+    this.conversations =
+      (data as Conversation[]).sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ) || [];
   }
 
   createNewUnsavedSession(title: string = 'New Chat'): void {
@@ -169,7 +177,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       return;
     }
     this.messages = (data as Message[]) || [];
-    this.scrollToBottom();
+    this.scrollToLastMessage();
   }
 
   private listenToNewMessages(): void {
@@ -190,7 +198,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           if (this.tempMessageIds.has(newMessage.id)) return;
           if (!this.messages.some((msg) => msg.id === newMessage.id)) {
             this.messages.push(newMessage);
-            this.scrollToBottom();
+            this.scrollToLastMessage();
           }
         }
       )
@@ -198,7 +206,12 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   async sendMessage(): Promise<void> {
-    if (this.chatForm.invalid || this.sending || (!this.currentConversationId && !this.isNewUnsavedConversation)) return;
+    if (
+      this.chatForm.invalid ||
+      this.sending ||
+      (!this.currentConversationId && !this.isNewUnsavedConversation)
+    )
+      return;
     const userMessageContent = this.chatForm.get('message')!.value.trim();
     if (!userMessageContent) return;
 
@@ -208,11 +221,15 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     try {
       if (this.isNewUnsavedConversation) {
-        const title = userMessageContent.substring(0, 30) + (userMessageContent.length > 30 ? '...' : '');
-        const { data: newConvList, error: convError } = await this.chatService.createConversation(this.currentUserId, title);
+        const title =
+          userMessageContent.substring(0, 30) +
+          (userMessageContent.length > 30 ? '...' : '');
+        const { data: newConvList, error: convError } =
+          await this.chatService.createConversation(this.currentUserId, title);
         if (convError) throw convError;
         const newConv = (newConvList as unknown as Conversation[])?.[0];
-        if (!newConv) throw new Error('Failed to retrieve new conversation ID.');
+        if (!newConv)
+          throw new Error('Failed to retrieve new conversation ID.');
         this.currentConversationId = newConv.id;
         this.currentConversationTitle = newConv.title;
         this.conversations.unshift(newConv);
@@ -220,7 +237,8 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.listenToNewMessages();
       }
 
-      const isFirstMessage = this.messages.length === 0 && !this.isNewUnsavedConversation;
+      const isFirstMessage =
+        this.messages.length === 0 && !this.isNewUnsavedConversation;
       const userTempId = crypto.randomUUID();
       const tempUserMessage: Message = {
         id: userTempId,
@@ -232,14 +250,26 @@ export class ChatComponent implements OnInit, OnDestroy {
       };
       this.messages.push(tempUserMessage);
       this.tempMessageIds.add(userTempId);
-      this.scrollToBottom();
+      this.scrollToLastMessage();
 
-      await this.chatService.sendMessage(this.currentConversationId!, this.currentUserId, 'user', userMessageContent);
+      await this.chatService.sendMessage(
+        this.currentConversationId!,
+        this.currentUserId,
+        'user',
+        userMessageContent
+      );
 
       if (isFirstMessage) {
-        const newTitle = userMessageContent.substring(0, 30) + (userMessageContent.length > 30 ? '...' : '');
-        await this.chatService.updateConversationTitle(this.currentConversationId!, newTitle);
-        const convIndex = this.conversations.findIndex((c) => c.id === this.currentConversationId);
+        const newTitle =
+          userMessageContent.substring(0, 30) +
+          (userMessageContent.length > 30 ? '...' : '');
+        await this.chatService.updateConversationTitle(
+          this.currentConversationId!,
+          newTitle
+        );
+        const convIndex = this.conversations.findIndex(
+          (c) => c.id === this.currentConversationId
+        );
         if (convIndex > -1) {
           this.conversations[convIndex].title = newTitle;
           this.currentConversationTitle = newTitle;
@@ -251,13 +281,16 @@ export class ChatComponent implements OnInit, OnDestroy {
         content: msg.content,
       }));
 
-      const aiResponseContent = await this.chatService.getAiResponse(historyForAi);
-      const { data: aiMessageData, error: saveError } = await this.chatService.sendMessage(
-        this.currentConversationId!,
-        this.currentUserId,
-        'assistant',
-        aiResponseContent
+      const aiResponseContent = await this.chatService.getAiResponse(
+        historyForAi
       );
+      const { data: aiMessageData, error: saveError } =
+        await this.chatService.sendMessage(
+          this.currentConversationId!,
+          this.currentUserId,
+          'assistant',
+          aiResponseContent
+        );
       if (saveError) throw saveError;
       const aiMessage = (aiMessageData as unknown as Message[])[0];
       if (aiMessage && !this.messages.some((msg) => msg.id === aiMessage.id)) {
@@ -268,13 +301,18 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.apiError = error.message || 'An unexpected error occurred.';
     } finally {
       this.sending = false;
-      this.scrollToBottom();
+      this.scrollToLastMessage();
     }
   }
 
-  async openDeleteConfirmation(conversationId: string, event: MouseEvent): Promise<void> {
+  async openDeleteConfirmation(
+    conversationId: string,
+    event: MouseEvent
+  ): Promise<void> {
     event.stopPropagation();
-    const conversation = this.conversations.find(c => c.id === conversationId);
+    const conversation = this.conversations.find(
+      (c) => c.id === conversationId
+    );
     const title = conversation ? conversation.title : 'this conversation';
 
     try {
@@ -311,7 +349,9 @@ export class ChatComponent implements OnInit, OnDestroy {
 
       if (error) throw error;
 
-      this.conversations = this.conversations.filter((c) => c.id !== conversationId);
+      this.conversations = this.conversations.filter(
+        (c) => c.id !== conversationId
+      );
 
       if (this.currentConversationId === conversationId) {
         this.realtimeSubscription?.unsubscribe();
@@ -340,7 +380,8 @@ export class ChatComponent implements OnInit, OnDestroy {
       });
 
       modalRef.componentInstance.title = 'Confirm Logout';
-      modalRef.componentInstance.message = 'Are you sure you want to log out?<br/><strong>Your session will be closed.</strong>';
+      modalRef.componentInstance.message =
+        'Are you sure you want to log out?<br/><strong>Your session will be closed.</strong>';
       modalRef.componentInstance.confirmText = 'Logout';
       modalRef.componentInstance.cancelText = 'Cancel';
       modalRef.componentInstance.danger = true;

@@ -73,9 +73,7 @@
   </div>
 
   <div class="main-content">
-    <div
-      class="chat-header p-3 border-bottom bg-white shadow-sm d-flex align-items-center"
-    >
+    <div class="chat-header p-3 border-bottom bg-white shadow-sm d-flex align-items-center">
       <button
         class="btn btn-light d-lg-none me-3"
         type="button"
@@ -89,7 +87,7 @@
     </div>
 
     <div class="chat-body">
-      <div class="chat-messages mx-auto" style="max-width: 800px">
+      <div class="chat-messages mx-auto w-100" style="max-width: 800px">
         <div
           *ngIf="!loadingUserInfo && messages.length === 0"
           class="text-center text-muted mt-5"
@@ -98,8 +96,9 @@
         </div>
 
         <div
-          *ngFor="let msg of messages"
+          *ngFor="let msg of messages; let last = last"
           class="d-flex mb-3"
+          [id]="last ? 'last-msg' : ''"
           [class.justify-content-end]="msg.role === 'user'"
           [class.justify-content-start]="msg.role === 'assistant'"
         >
@@ -109,23 +108,21 @@
             [class.text-white]="msg.role === 'user'"
             [class.bg-white]="msg.role === 'assistant'"
           >
-            {{ msg.content }}
+            <div class="message-content">{{ msg.content }}</div>
             <div
-              class="text-end small mt-1"
+              class="small mt-2"
               [class.text-light]="msg.role === 'user'"
               [class.text-muted]="msg.role === 'assistant'"
+              [class.text-end]="msg.role === 'user'"
             >
               {{ msg.created_at | date : "shortTime" }}
             </div>
           </div>
         </div>
 
-        <div *ngIf="sending" class="d-flex justify-content-start mb-3">
-          <div class="p-3 rounded bg-white border text-muted">
-            <span
-              class="spinner-border spinner-border-sm me-2"
-              role="status"
-            ></span>
+        <div *ngIf="sending" id="typing-indicator" class="d-flex justify-content-start mb-3">
+          <div class="p-3 rounded bg-white border text-muted shadow-sm">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
             AI is typing...
           </div>
         </div>
@@ -150,11 +147,7 @@
         <button
           type="submit"
           class="btn btn-primary btn-lg flex-shrink-0"
-          [disabled]="
-            chatForm.invalid ||
-            sending ||
-            (!currentConversationId && !isNewUnsavedConversation)
-          "
+          [disabled]="chatForm.invalid || sending || (!currentConversationId && !isNewUnsavedConversation)"
         >
           <i class="bi bi-send-fill"></i>
         </button>
