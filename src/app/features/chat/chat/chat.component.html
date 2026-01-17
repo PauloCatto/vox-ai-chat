@@ -145,7 +145,7 @@
           formControlName="message"
           rows="1"
           (input)="adjustHeight($event)"
-          [disabled]="loadingUserInfo || sending || !currentConversationId"
+          [disabled]="loadingUserInfo || sending"
         ></textarea>
         <button
           type="submit"
