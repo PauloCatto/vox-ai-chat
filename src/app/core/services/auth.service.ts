@@ -9,8 +9,24 @@ export class AuthService {
 
   constructor(private supabaseService: SupabaseService) {}
 
-  signUp(email: string, password: string) {
-    return this.supabase.auth.signUp({ email, password });
+  async signUp(email: string, password: string, username?: string) {
+    const { data: signUpData, error: signUpError } =
+      await this.supabase.auth.signUp({ email, password });
+    if (signUpError) return { data: null, error: signUpError };
+
+    const { data: signInData, error: signInError } =
+      await this.supabase.auth.signInWithPassword({ email, password });
+    if (signInError) return { data: null, error: signInError };
+
+    if (username && signInData.user) {
+      const { error: profileError } = await this.createProfile(
+        signInData.user.id,
+        username
+      );
+      if (profileError) return { data: null, error: profileError };
+    }
+
+    return { data: signUpData, error: null };
   }
 
   signIn(email: string, password: string) {
