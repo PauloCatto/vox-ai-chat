@@ -8,17 +8,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { LoadingComponent } from "@shared/loading/loading.component";
+import { LoadingComponent } from '@shared/loading/loading.component';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterModule,
-    LoadingComponent
-],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, LoadingComponent],
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss'],
 })
@@ -28,9 +23,9 @@ export class SignupComponent implements OnInit {
   private router = inject(Router);
 
   signupForm!: FormGroup;
-  loading = false;
-  errorMessage = '';
-  showPassword = false;
+  loading: boolean = false;
+  errorMessage: string = '';
+  showPassword: boolean = false;
 
   ngOnInit(): void {
     this.initForm();
@@ -44,12 +39,12 @@ export class SignupComponent implements OnInit {
         password: ['', Validators.required],
         confirmPassword: ['', Validators.required],
       },
-      { validators: this.passwordMatchValidator }
+      { validators: this.passwordMatchValidator },
     );
   }
 
   private passwordMatchValidator(
-    group: FormGroup
+    group: FormGroup,
   ): { [key: string]: boolean } | null {
     const password = group.get('password')?.value;
     const confirm = group.get('confirmPassword')?.value;

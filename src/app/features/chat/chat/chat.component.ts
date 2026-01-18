@@ -12,22 +12,8 @@ import { SupabaseService } from '../../../core/services/supabase.service';
 import { ChatService } from '../../../core/services/chat.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ModalComponent } from '@shared/modal/modal.component';
-
-interface Message {
-  id: string;
-  user_id: string;
-  content: string;
-  created_at: string;
-  role: 'user' | 'assistant';
-  conversation_id: string;
-}
-
-interface Conversation {
-  id: string;
-  title: string;
-  user_id: string;
-  created_at: string;
-}
+import { Conversation, Message } from 'src/app/core/models/chat.model';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 @Component({
   selector: 'app-chat',
@@ -57,7 +43,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   isSidebarVisible: boolean = false;
   isNewUnsavedConversation: boolean = false;
 
-  private realtimeSubscription: any;
+  private realtimeSubscription: RealtimeChannel | null = null;
   private tempMessageIds = new Set<string>();
 
   ngOnInit(): void {
@@ -120,7 +106,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   async loadConversations(): Promise<void> {
     const { data, error } = await this.chatService.getConversations(
-      this.currentUserId
+      this.currentUserId,
     );
     if (error) {
       console.error('Error loading conversations:', error);
@@ -129,7 +115,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.conversations =
       (data as Conversation[]).sort(
         (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       ) || [];
   }
 
@@ -200,7 +186,7 @@ export class ChatComponent implements OnInit, OnDestroy {
             this.messages.push(newMessage);
             this.scrollToLastMessage();
           }
-        }
+        },
       )
       .subscribe();
   }
@@ -256,7 +242,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.currentConversationId!,
         this.currentUserId,
         'user',
-        userMessageContent
+        userMessageContent,
       );
 
       if (isFirstMessage) {
@@ -265,10 +251,10 @@ export class ChatComponent implements OnInit, OnDestroy {
           (userMessageContent.length > 30 ? '...' : '');
         await this.chatService.updateConversationTitle(
           this.currentConversationId!,
-          newTitle
+          newTitle,
         );
         const convIndex = this.conversations.findIndex(
-          (c) => c.id === this.currentConversationId
+          (c) => c.id === this.currentConversationId,
         );
         if (convIndex > -1) {
           this.conversations[convIndex].title = newTitle;
@@ -281,15 +267,14 @@ export class ChatComponent implements OnInit, OnDestroy {
         content: msg.content,
       }));
 
-      const aiResponseContent = await this.chatService.getAiResponse(
-        historyForAi
-      );
+      const aiResponseContent =
+        await this.chatService.getAiResponse(historyForAi);
       const { data: aiMessageData, error: saveError } =
         await this.chatService.sendMessage(
           this.currentConversationId!,
           this.currentUserId,
           'assistant',
-          aiResponseContent
+          aiResponseContent,
         );
       if (saveError) throw saveError;
       const aiMessage = (aiMessageData as unknown as Message[])[0];
@@ -307,11 +292,11 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   async openDeleteConfirmation(
     conversationId: string,
-    event: MouseEvent
+    event: MouseEvent,
   ): Promise<void> {
     event.stopPropagation();
     const conversation = this.conversations.find(
-      (c) => c.id === conversationId
+      (c) => c.id === conversationId,
     );
     const title = conversation ? conversation.title : 'this conversation';
 
@@ -350,7 +335,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       if (error) throw error;
 
       this.conversations = this.conversations.filter(
-        (c) => c.id !== conversationId
+        (c) => c.id !== conversationId,
       );
 
       if (this.currentConversationId === conversationId) {

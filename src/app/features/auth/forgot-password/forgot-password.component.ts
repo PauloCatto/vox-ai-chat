@@ -20,15 +20,14 @@ import { LoadingComponent } from "@shared/loading/loading.component";
 export class ForgotPasswordComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  
+  private loadingTimer: ReturnType<typeof setTimeout> | undefined;
 
   forgotForm!: FormGroup;
-
-  loading = false;
-  private loadingTimer: any;
-
-  successMessage = '';
-  errorMessage = '';
-
+  loading: boolean = false;
+  successMessage: string = '';
+  errorMessage: string = '';
+  
   ngOnInit(): void {
     this.initForm();
   }
