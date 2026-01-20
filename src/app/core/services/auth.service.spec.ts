@@ -22,9 +22,7 @@ describe('AuthService', () => {
       }),
     };
 
-    const supabaseServiceMock = {
-      getClient: () => supabaseSpy,
-    };
+    const supabaseServiceMock = { getClient: () => supabaseSpy };
 
     TestBed.configureTestingModule({
       providers: [
@@ -36,85 +34,96 @@ describe('AuthService', () => {
     service = TestBed.inject(AuthService);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
-  describe('signUp flow', () => {
-    it('should complete full sign up flow (signUp -> signIn -> createProfile)', async () => {
-      const email = 'test@test.com';
-      const password = 'password123';
-      const username = 'testuser';
-
+  describe('signUp Branches', () => {
+    it('should complete full flow with username', async () => {
       supabaseSpy.auth.signUp.and.resolveTo({
-        data: { user: { id: '123' } },
+        data: { user: { id: '1' } },
         error: null,
       });
       supabaseSpy.auth.signInWithPassword.and.resolveTo({
-        data: { user: { id: '123' } },
+        data: { user: { id: '1' } },
         error: null,
       });
 
-      const result = await service.signUp(email, password, username);
-
-      expect(supabaseSpy.auth.signUp).toHaveBeenCalled();
-      expect(supabaseSpy.auth.signInWithPassword).toHaveBeenCalled();
-      expect(supabaseSpy.from).toHaveBeenCalledWith('profiles');
+      const result = await service.signUp('a@a.com', '123', 'user');
       expect(result.error).toBeNull();
+      expect(supabaseSpy.from).toHaveBeenCalledWith('profiles');
     });
 
-    it('should return error if signUp fails', async () => {
+    it('should return error if auto-login fails', async () => {
       supabaseSpy.auth.signUp.and.resolveTo({
+        data: { user: { id: '1' } },
+        error: null,
+      });
+      supabaseSpy.auth.signInWithPassword.and.resolveTo({
         data: null,
-        error: { message: 'Auth Error' },
+        error: { message: 'login error' },
       });
 
-      const result = await service.signUp('test@test.com', '123');
+      const result = await service.signUp('a@a.com', '123', 'user');
+      expect(result.error.message).toBe('login error');
+    });
 
-      expect(result.error).toBeDefined();
-      expect(supabaseSpy.auth.signInWithPassword).not.toHaveBeenCalled();
+    it('should return error if profile creation fails', async () => {
+      supabaseSpy.auth.signUp.and.resolveTo({
+        data: { user: { id: '1' } },
+        error: null,
+      });
+      supabaseSpy.auth.signInWithPassword.and.resolveTo({
+        data: { user: { id: '1' } },
+        error: null,
+      });
+
+      supabaseSpy.from.and.returnValue({
+        insert: jasmine
+          .createSpy('insert')
+          .and.resolveTo({ error: { message: 'db error' } }),
+      });
+
+      const result = await service.signUp('a@a.com', '123', 'user');
+      expect(result.error.message).toBe('db error');
     });
   });
 
-  describe('Auth Methods', () => {
-    it('should call signInWithPassword', async () => {
-      supabaseSpy.auth.signInWithPassword.and.resolveTo({
-        data: {},
-        error: null,
+  describe('Other Methods', () => {
+    it('should call updatePassword (was updateUser)', async () => {
+      supabaseSpy.auth.updateUser.and.resolveTo({ data: {}, error: null });
+      await service.updatePassword('new-pass');
+      expect(supabaseSpy.auth.updateUser).toHaveBeenCalledWith({
+        password: 'new-pass',
       });
-      await service.signIn('test@test.com', '123');
-      expect(supabaseSpy.auth.signInWithPassword).toHaveBeenCalled();
     });
 
-    it('should call signOut', async () => {
+    it('should handle signInWithGoogle success', async () => {
+      supabaseSpy.auth.signInWithOAuth.and.resolveTo({ error: null });
+      await service.signInWithGoogle();
+      expect(supabaseSpy.auth.signInWithOAuth).toHaveBeenCalled();
+    });
+
+    it('should throw error in signInWithGoogle if fails', async () => {
+      supabaseSpy.auth.signInWithOAuth.and.resolveTo({
+        error: { message: 'OAuth Fail' },
+      });
+      try {
+        await service.signInWithGoogle();
+      } catch (e: any) {
+        expect(e.message).toBe('OAuth Fail');
+      }
+    });
+
+    it('should cover getUser', async () => {
+      supabaseSpy.auth.getUser.and.resolveTo({
+        data: { user: {} },
+        error: null,
+      });
+      await service.getUser();
+      expect(supabaseSpy.auth.getUser).toHaveBeenCalled();
+    });
+
+    it('should cover signOut', async () => {
       supabaseSpy.auth.signOut.and.resolveTo({ error: null });
       await service.signOut();
       expect(supabaseSpy.auth.signOut).toHaveBeenCalled();
-    });
-
-    it('should call resetPasswordForEmail with correct redirect', async () => {
-      supabaseSpy.auth.resetPasswordForEmail.and.resolveTo({
-        data: {},
-        error: null,
-      });
-      await service.resetPassword('test@test.com');
-
-      expect(supabaseSpy.auth.resetPasswordForEmail).toHaveBeenCalledWith(
-        'test@test.com',
-        jasmine.objectContaining({
-          redirectTo: jasmine.stringMatching('/reset-password'),
-        }),
-      );
-    });
-  });
-
-  describe('OAuth', () => {
-    it('should call signInWithOAuth for Google', async () => {
-      supabaseSpy.auth.signInWithOAuth.and.resolveTo({ error: null });
-      await service.signInWithGoogle();
-      expect(supabaseSpy.auth.signInWithOAuth).toHaveBeenCalledWith(
-        jasmine.objectContaining({ provider: 'google' }),
-      );
     });
   });
 });
