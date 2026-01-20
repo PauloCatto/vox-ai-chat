@@ -366,11 +366,11 @@ export class ChatComponent implements OnInit, OnDestroy {
         await this.executeDelete(conversationId);
       }
     } catch (error) {
-      // Modal dismissed
+      console.error('Error opening delete confirmation:', error);
     }
   }
 
-  private async executeDelete(conversationId: string): Promise<void> {
+  async executeDelete(conversationId: string): Promise<void> {
     this.sending = true;
     try {
       const { error } = await this.supabaseService
