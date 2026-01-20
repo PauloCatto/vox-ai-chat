@@ -16,6 +16,7 @@ import { ModalComponent } from '@shared/modal/modal.component';
 import { Conversation, Message } from 'src/app/core/models/chat.model';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { NotificationService } from 'src/app/core/services/notification.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-chat',
@@ -92,16 +93,31 @@ export class ChatComponent implements OnInit, OnDestroy {
     try {
       const { data: userData, error } = await this.authService.getUser();
       if (error) throw error;
+
       const user = userData.user;
       if (!user) {
         this.router.navigate(['/login']);
         return;
       }
+
       this.currentUserId = user.id;
       this.userFullName =
         user.user_metadata?.['full_name'] || user.email || 'User';
       this.loadingUserInfo = false;
+
       await this.loadConversations();
+
+      const hasNotified = sessionStorage.getItem('welcome_notified');
+
+      if (!hasNotified) {
+        if (this.conversations.length === 0) {
+          this.notify.success(`Welcome to VoxAI, ${this.userFullName}!`);
+        } else {
+          this.notify.success(`Welcome back, ${this.userFullName}!`);
+        }
+        sessionStorage.setItem('welcome_notified', 'true');
+      }
+
       if (this.conversations.length === 0) {
         this.createNewUnsavedSession('New Chat');
       } else {
@@ -407,13 +423,17 @@ export class ChatComponent implements OnInit, OnDestroy {
       if (!confirmed) return;
 
       await this.authService.signOut();
+
+      sessionStorage.removeItem('welcome_notified');
+
+      this.notify.success('Logged out successfully. See you soon!');
       this.router.navigate(['/login']);
     } catch (error) {
       if (error === 'cancel' || error === 0) return;
       console.error('Logout failed:', error);
+      this.notify.error('Failed to log out. Please try again.');
     }
   }
-
   adjustHeight(event: any): void {
     const element = event.target;
     element.style.height = 'auto';
@@ -432,6 +452,42 @@ export class ChatComponent implements OnInit, OnDestroy {
 
       const textarea = event.target as HTMLTextAreaElement;
       textarea.style.height = 'auto';
+    }
+  }
+
+  async openEditTitleModal(conv: any, event: Event) {
+    event.stopPropagation();
+
+    const { value: newTitle } = await Swal.fire({
+      title: 'Rename Conversation',
+      input: 'text',
+      inputValue: conv.title,
+      inputLabel: 'Enter the new title',
+      showCancelButton: true,
+      confirmButtonText: 'Save',
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#ef4444',
+      inputValidator: (value) => {
+        if (!value || value.trim().length === 0) {
+          return 'The title cannot be empty!';
+        }
+        return null;
+      },
+    });
+
+    if (newTitle && newTitle.trim() !== conv.title) {
+      const response = await this.chatService.updateConversationTitle(
+        conv.id,
+        newTitle.trim(),
+      );
+
+      if (!response.error) {
+        conv.title = newTitle.trim();
+
+        if (this.currentConversationId === conv.id) {
+          this.currentConversationTitle = newTitle.trim();
+        }
+      }
     }
   }
 

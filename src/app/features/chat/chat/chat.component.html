@@ -59,6 +59,16 @@
             <span class="conversation-title-text flex-grow-1 text-truncate">
               <i class="bi bi-chat-text me-2"></i>{{ conv.title }}
             </span>
+
+            <button
+              (click)="openEditTitleModal(conv, $event)"
+              class="btn btn-sm btn-link ms-1 edit-btn p-0"
+              [class.text-white]="conv.id === currentConversationId"
+              [class.text-muted]="conv.id !== currentConversationId"
+            >
+              <i class="bi bi-pencil-square"></i>
+            </button>
+
             <button
               (click)="openDeleteConfirmation(conv.id, $event)"
               class="btn btn-sm btn-link ms-2 delete-btn p-0"
