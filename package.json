@@ -20,11 +20,13 @@
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
     "@ng-bootstrap/ng-bootstrap": "^16.0.0",
+    "@ngneat/hot-toast": "^7.0.0",
     "@popperjs/core": "^2.11.8",
     "@supabase/supabase-js": "^2.77.0",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "rxjs": "~7.8.0",
+    "sweetalert2": "^11.26.17",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"
   },
