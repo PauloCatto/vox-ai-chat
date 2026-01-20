@@ -159,6 +159,19 @@ button[type="submit"] {
   }
 }
 
+.search-box {
+  transition: opacity 0.3s ease;
+  
+  input:disabled {
+    cursor: not-allowed;
+    background-color: #f8f9fa !important;
+    &::placeholder {
+      font-size: 0.8rem;
+      color: #adb5bd;
+    }
+  }
+}
+
 @keyframes messageSlide {
   from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }

@@ -5,51 +5,59 @@ import { lastValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SupabaseClient, PostgrestSingleResponse } from '@supabase/supabase-js';
 import { Conversation, GeminiResponse, Message } from '../models/chat.model';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChatService {
+  private readonly supabaseService = inject(SupabaseService);
+  private readonly http = inject(HttpClient);
+  private readonly notify = inject(NotificationService);
+
   private supabase: SupabaseClient = this.supabaseService.getClient();
-  private http: HttpClient = inject(HttpClient);
   private chatApiUrl: string = environment.chatApiUrl;
   private apiKey: string = environment.geminiApiKey;
 
-  constructor(private supabaseService: SupabaseService) {}
+  constructor() {}
 
   async getAiResponse(
     history: { role: string; content: string }[],
-  ): Promise<string> {
+  ): Promise<string | null> {
     if (!this.apiKey) {
-      throw new Error('AI service is not configured.');
+      this.notify.error('Gemini API Key is missing.');
+      return null;
     }
 
-    const mappedHistory = history.map((msg) => ({
-      role: msg.role === 'assistant' ? 'model' : msg.role,
-      parts: [{ text: msg.content }],
-    }));
-
-    const body = {
-      contents: mappedHistory,
-      generationConfig: { temperature: 0.7 },
-    };
-
     const url = `${this.chatApiUrl}?key=${this.apiKey}`;
+    const body = {
+      contents: history.map((msg) => ({
+        role: msg.role === 'assistant' ? 'model' : msg.role,
+        parts: [{ text: msg.content }],
+      })),
+    };
 
     try {
       const response = await lastValueFrom(
         this.http.post<GeminiResponse>(url, body),
       );
 
-      const text = response?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) {
-        return text.trim();
-      } else {
-        throw new Error('AI response was blocked or empty.');
+      const text = response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+      if (!text) {
+        this.notify.error('AI returned an empty response.');
+        return null;
       }
-    } catch (error) {
-      console.error('Error calling Gemini API:', error);
-      throw error;
+
+      return text;
+    } catch (error: any) {
+      const errorMsg =
+        error.status === 429
+          ? 'Rate limit exceeded.'
+          : 'Failed to connect to AI Service.';
+
+      this.notify.error(errorMsg);
+      return null;
     }
   }
 
@@ -69,7 +77,7 @@ export class ChatService {
       .returns<Conversation[]>();
   }
 
-  sendMessage(
+  async sendMessage(
     conversationId: string,
     userId: string,
     role: string,
@@ -82,11 +90,17 @@ export class ChatService {
       content,
     };
 
-    return this.supabase
+    const response = await this.supabase
       .from('messages')
       .insert(newMessage)
       .select()
       .returns<Message[]>();
+
+    if (response.error) {
+      this.notify.error('Failed to save message.');
+    }
+
+    return response;
   }
 
   getMessages(conversationId: string) {
@@ -102,9 +116,17 @@ export class ChatService {
     conversationId: string,
     newTitle: string,
   ): Promise<PostgrestSingleResponse<null>> {
-    return await this.supabase
+    const response = await this.supabase
       .from('conversations')
       .update({ title: newTitle })
       .eq('id', conversationId);
+
+    if (response.error) {
+      this.notify.error('Failed to update title.');
+    } else {
+      this.notify.success('Title updated.');
+    }
+
+    return response;
   }
 }

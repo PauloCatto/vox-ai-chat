@@ -4,6 +4,7 @@ import {
   FormGroup,
   Validators,
   ReactiveFormsModule,
+  FormsModule,
 } from '@angular/forms';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
@@ -14,11 +15,18 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ModalComponent } from '@shared/modal/modal.component';
 import { Conversation, Message } from 'src/app/core/models/chat.model';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { NotificationService } from 'src/app/core/services/notification.service';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DatePipe, ModalComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    DatePipe,
+    ModalComponent,
+    FormsModule,
+  ],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
 })
@@ -28,6 +36,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private chatService = inject(ChatService);
   private supabaseService = inject(SupabaseService);
+  private notify = inject(NotificationService);
   private modalService = inject(NgbModal);
 
   chatForm!: FormGroup;
@@ -42,6 +51,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   apiError: string | null = null;
   isSidebarVisible: boolean = false;
   isNewUnsavedConversation: boolean = false;
+  searchQuery: string = '';
 
   private realtimeSubscription: RealtimeChannel | null = null;
   private tempMessageIds = new Set<string>();
@@ -192,17 +202,22 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   async sendMessage(): Promise<void> {
+    const messageControl = this.chatForm.get('message');
+
     if (
       this.chatForm.invalid ||
       this.sending ||
       (!this.currentConversationId && !this.isNewUnsavedConversation)
-    )
+    ) {
       return;
-    const userMessageContent = this.chatForm.get('message')!.value.trim();
+    }
+
+    const userMessageContent = messageControl?.value.trim();
     if (!userMessageContent) return;
 
     this.sending = true;
     this.apiError = null;
+    messageControl?.disable();
     this.chatForm.reset();
 
     try {
@@ -212,10 +227,17 @@ export class ChatComponent implements OnInit, OnDestroy {
           (userMessageContent.length > 30 ? '...' : '');
         const { data: newConvList, error: convError } =
           await this.chatService.createConversation(this.currentUserId, title);
-        if (convError) throw convError;
+
+        if (convError) {
+          this.notify.error(
+            'System was unable to initialize the conversation. Please try again.',
+          );
+          throw convError;
+        }
+
         const newConv = (newConvList as unknown as Conversation[])?.[0];
-        if (!newConv)
-          throw new Error('Failed to retrieve new conversation ID.');
+        if (!newConv) throw new Error('New conversation ID retrieval failed.');
+
         this.currentConversationId = newConv.id;
         this.currentConversationTitle = newConv.title;
         this.conversations.unshift(newConv);
@@ -223,8 +245,6 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.listenToNewMessages();
       }
 
-      const isFirstMessage =
-        this.messages.length === 0 && !this.isNewUnsavedConversation;
       const userTempId = crypto.randomUUID();
       const tempUserMessage: Message = {
         id: userTempId,
@@ -235,31 +255,20 @@ export class ChatComponent implements OnInit, OnDestroy {
         conversation_id: this.currentConversationId!,
       };
       this.messages.push(tempUserMessage);
-      this.tempMessageIds.add(userTempId);
       this.scrollToLastMessage();
 
-      await this.chatService.sendMessage(
+      const { error: userMsgError } = await this.chatService.sendMessage(
         this.currentConversationId!,
         this.currentUserId,
         'user',
         userMessageContent,
       );
 
-      if (isFirstMessage) {
-        const newTitle =
-          userMessageContent.substring(0, 30) +
-          (userMessageContent.length > 30 ? '...' : '');
-        await this.chatService.updateConversationTitle(
-          this.currentConversationId!,
-          newTitle,
+      if (userMsgError) {
+        this.notify.error(
+          'Failed to synchronize your message with the server.',
         );
-        const convIndex = this.conversations.findIndex(
-          (c) => c.id === this.currentConversationId,
-        );
-        if (convIndex > -1) {
-          this.conversations[convIndex].title = newTitle;
-          this.currentConversationTitle = newTitle;
-        }
+        throw userMsgError;
       }
 
       const historyForAi = this.messages.map((msg) => ({
@@ -269,6 +278,14 @@ export class ChatComponent implements OnInit, OnDestroy {
 
       const aiResponseContent =
         await this.chatService.getAiResponse(historyForAi);
+
+      if (!aiResponseContent) {
+        this.notify.error(
+          'The AI service is currently unresponsive. Please attempt your request again.',
+        );
+        return;
+      }
+
       const { data: aiMessageData, error: saveError } =
         await this.chatService.sendMessage(
           this.currentConversationId!,
@@ -276,17 +293,31 @@ export class ChatComponent implements OnInit, OnDestroy {
           'assistant',
           aiResponseContent,
         );
-      if (saveError) throw saveError;
+
+      if (saveError) {
+        this.notify.error(
+          "An error occurred while saving the assistant's response.",
+        );
+        throw saveError;
+      }
+
       const aiMessage = (aiMessageData as unknown as Message[])[0];
       if (aiMessage && !this.messages.some((msg) => msg.id === aiMessage.id)) {
         this.messages.push(aiMessage);
       }
     } catch (error: any) {
-      console.error('Error:', error);
-      this.apiError = error.message || 'An unexpected error occurred.';
+      console.error('[Internal Chat Error]:', error);
     } finally {
       this.sending = false;
+      messageControl?.enable();
       this.scrollToLastMessage();
+
+      setTimeout(() => {
+        const textarea = document.querySelector(
+          'textarea',
+        ) as HTMLTextAreaElement;
+        textarea?.focus();
+      }, 0);
     }
   }
 
@@ -387,5 +418,29 @@ export class ChatComponent implements OnInit, OnDestroy {
     const element = event.target;
     element.style.height = 'auto';
     element.style.height = element.scrollHeight + 'px';
+  }
+  handleEnter(event: Event): void {
+    if (!(event instanceof KeyboardEvent) || event.shiftKey) return;
+
+    event.preventDefault();
+
+    const messageControl = this.chatForm.get('message');
+    const messageValue = messageControl?.value?.trim();
+
+    if (this.chatForm.valid && !this.sending && messageValue) {
+      this.sendMessage();
+
+      const textarea = event.target as HTMLTextAreaElement;
+      textarea.style.height = 'auto';
+    }
+  }
+
+  get filteredConversations(): Conversation[] {
+    if (!this.searchQuery.trim()) {
+      return this.conversations;
+    }
+    return this.conversations.filter((conv) =>
+      conv.title.toLowerCase().includes(this.searchQuery.toLowerCase()),
+    );
   }
 }
