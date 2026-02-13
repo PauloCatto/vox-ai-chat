@@ -1,88 +1,48 @@
 <div class="chat-container">
-  <div
-    class="sidebar-backdrop d-lg-none"
-    *ngIf="isSidebarVisible"
-    (click)="toggleSidebar()"
-  ></div>
+  <div class="sidebar-backdrop d-lg-none" *ngIf="isSidebarVisible" (click)="toggleSidebar()"></div>
 
-  <div
-    class="sidebar d-flex flex-column bg-white border-end"
-    [class.show]="isSidebarVisible"
-  >
-    <div class="p-3 flex-shrink-0">
-      <h5 class="app-title text-primary fw-bold mb-4">
-        <i class="bi bi-chat-dots-fill me-2"></i>VoxAI Chat
+  <div class="sidebar d-flex flex-column" [class.show]="isSidebarVisible">
+    <div class="p-4 flex-shrink-0">
+      <h5 class="app-title text-primary fw-bold mb-4 d-flex align-items-center">
+        <i class="bi bi-chat-dots-fill me-2 fs-4"></i>VoxAI Chat
       </h5>
 
-      <button
-        class="btn btn-primary w-100 mb-3"
-        (click)="createNewConversation('New Chat')"
-        [disabled]="loadingUserInfo"
-      >
+      <button class="btn btn-primary w-100 mb-3 shadow-sm" (click)="createNewConversation('New Chat')"
+        [disabled]="loadingUserInfo">
         <i class="bi bi-plus-lg me-1"></i> New Chat
       </button>
 
-      <div
-        class="search-box position-relative"
-        *ngIf="conversations.length > 0"
-      >
-        <i
-          class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"
-        ></i>
-        <input
-          type="text"
-          class="form-control ps-5 bg-light border-0"
-          [(ngModel)]="searchQuery"
-          [disabled]="loadingUserInfo"
-          placeholder="Search chats..."
-          style="font-size: 0.9rem; border-radius: 8px; height: 38px"
-        />
+      <div class="search-box position-relative" *ngIf="conversations.length > 0">
+        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+        <input type="text" class="form-control ps-5 bg-white border" [(ngModel)]="searchQuery"
+          [disabled]="loadingUserInfo" placeholder="Search chats..."
+          style="font-size: 0.9rem; border-radius: 12px; height: 42px" />
       </div>
     </div>
 
-    <div class="conversation-container flex-grow-1 overflow-x-hidden overflow-y-auto">
-      <ul class="nav flex-column conversation-list p-2">
-        <li class="nav-item d-flex justify-content-center w-100" *ngFor="let conv of filteredConversations">
-          <a
-            class="nav-link rounded mb-1 conversation-item d-flex align-items-center justify-content-between"
-            [class.active]="conv.id === currentConversationId"
-            [class.bg-primary]="conv.id === currentConversationId"
-            [class.text-white]="conv.id === currentConversationId"
-            [class.text-dark]="conv.id !== currentConversationId"
-            (click)="selectConversation(conv.id)"
-            href="javascript:void(0)"
-            style="width: 100%; transition: all 0.2s ease; overflow: hidden; white-space: nowrap;"
-          >
-            <span class="text-truncate d-block" style="max-width: 60%;">
-              <i class="bi bi-chat-text me-2"></i>{{ conv.title }}
-            </span>
+    <div class="conversation-container">
+      <ul class="conversation-list">
+        <li class="nav-item" *ngFor="let conv of filteredConversations">
+          <a class="conversation-item" [class.active]="conv.id === currentConversationId"
+            (click)="selectConversation(conv.id)">
+            <div class="chat-title" title="{{ conv.title }}">
+              <i class="bi bi-chat-text me-2 opacity-50"></i>
+              {{ conv.title }}
+            </div>
 
-            <div class="d-flex align-items-center flex-shrink-0">
-              <button
-                (click)="openEditTitleModal(conv, $event)"
-                class="btn btn-sm btn-link p-1 edit-btn"
-                [class.text-white]="conv.id === currentConversationId"
-                [class.text-muted]="conv.id !== currentConversationId"
-              >
-                <i class="bi bi-pencil-square"></i>
+            <div class="actions">
+              <button (click)="openEditTitleModal(conv, $event)" class="action-btn" title="Rename">
+                <i class="bi bi-pencil"></i>
               </button>
 
-              <button
-                (click)="openDeleteConfirmation(conv.id, $event)"
-                class="btn btn-sm btn-link p-1 ms-1 delete-btn"
-                [class.text-white]="conv.id === currentConversationId"
-                [class.text-danger]="conv.id !== currentConversationId"
-              >
-                <i class="bi bi-trash-fill"></i>
+              <button (click)="openDeleteConfirmation(conv.id, $event)" class="action-btn" title="Delete">
+                <i class="bi bi-trash"></i>
               </button>
             </div>
           </a>
         </li>
 
-        <li
-          class="nav-item text-center mt-3"
-          *ngIf="filteredConversations.length === 0 && searchQuery"
-        >
+        <li class="nav-item text-center mt-3" *ngIf="filteredConversations.length === 0 && searchQuery">
           <span class="text-muted small">No chats found.</span>
         </li>
 
@@ -94,118 +54,75 @@
       </ul>
     </div>
 
-    <div class="user-profile p-3 border-top flex-shrink-0">
-      <div class="user-info d-flex align-items-center mb-3">
+    <div class="user-profile">
+      <div class="d-flex align-items-center mb-3">
         <div
-          class="user-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0"
-          style="width: 38px; height: 38px; font-size: 1.1rem"
-        >
+          class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0"
+          style="width: 40px; height: 40px; font-weight: 600">
           {{ userFullName ? userFullName.charAt(0).toUpperCase() : "U" }}
         </div>
-        <strong class="user-name text-truncate">
-          {{ loadingUserInfo ? "Loading..." : userFullName }}
-        </strong>
+        <div class="overflow-hidden">
+          <h6 class="mb-0 text-truncate fw-bold">{{ loadingUserInfo ? "Loading..." : userFullName }}</h6>
+          <small class="text-muted">Online</small>
+        </div>
       </div>
-      <button class="btn btn-sm btn-outline-danger w-100" (click)="logout()">
+      <button class="btn btn-outline-danger btn-sm w-100 rounded-pill" (click)="logout()">
         <i class="bi bi-box-arrow-right me-1"></i> Logout
       </button>
     </div>
   </div>
 
-  <div class="main-content d-flex flex-column">
-    <div
-      class="chat-header p-3 border-bottom bg-white shadow-sm d-flex align-items-center flex-shrink-0"
-    >
-      <button
-        class="btn btn-light d-lg-none me-3"
-        type="button"
-        (click)="toggleSidebar()"
-      >
-        <i class="bi bi-list"></i>
+  <div class="main-content">
+    <div class="chat-header">
+      <button class="btn btn-icon d-lg-none me-3" type="button" (click)="toggleSidebar()">
+        <i class="bi bi-list fs-4"></i>
       </button>
-      <h6 class="mb-0 text-muted text-center flex-grow-1 text-truncate">
-        Conversation: <strong>{{ currentConversationTitle || "None" }}</strong>
+      <h6 class="mb-0 flex-grow-1 text-truncate">
+        {{ currentConversationTitle || "New Chat" }}
       </h6>
     </div>
 
-    <div class="chat-body flex-grow-1 overflow-auto">
-      <div class="chat-messages mx-auto w-100 p-3" style="max-width: 800px">
-        <div
-          *ngIf="!loadingUserInfo && messages.length === 0"
-          class="text-center text-muted mt-5"
-        >
-          <p><i class="bi bi-lightning-charge me-2"></i>VoxAi is ready.</p>
+    <div class="chat-body">
+      <div class="mx-auto w-100" style="max-width: 900px">
+        <div *ngIf="!loadingUserInfo && messages.length === 0" class="text-center text-muted mt-5">
+          <div class="mb-3">
+            <i class="bi bi-stars fs-1 text-primary opacity-50"></i>
+          </div>
+          <h5>How can I help you today?</h5>
         </div>
 
-        <div
-          *ngFor="let msg of messages; let last = last"
-          class="d-flex mb-3"
-          [id]="last ? 'last-msg' : ''"
-          [class.justify-content-end]="msg.role === 'user'"
-          [class.justify-content-start]="msg.role === 'assistant'"
-        >
-          <div
-            class="message-bubble p-3 rounded border shadow-sm"
-            [class.bg-primary]="msg.role === 'user'"
-            [class.text-white]="msg.role === 'user'"
-            [class.bg-white]="msg.role === 'assistant'"
-          >
-            <div class="message-content text-break">{{ msg.content }}</div>
-            <div
-              class="small mt-2"
-              [class.text-light]="msg.role === 'user'"
-              [class.text-muted]="msg.role === 'assistant'"
-              [class.text-end]="msg.role === 'user'"
-            >
+        <div *ngFor="let msg of messages; let last = last" class="d-flex mb-4" [id]="last ? 'last-msg' : ''"
+          [class.justify-content-end]="msg.role === 'user'" [class.justify-content-start]="msg.role === 'assistant'">
+          <div class="message-bubble shadow-sm" [class.user]="msg.role === 'user'"
+            [class.assistant]="msg.role === 'assistant'">
+            <div class="message-content" [innerHTML]="msg.content"></div>
+            <span class="message-time">
               {{ msg.created_at | date: "shortTime" }}
-            </div>
+            </span>
           </div>
         </div>
 
-        <div
-          *ngIf="sending"
-          id="typing-indicator"
-          class="d-flex justify-content-start mb-3"
-        >
-          <div class="p-3 rounded bg-white border text-muted shadow-sm">
-            <span
-              class="spinner-border spinner-border-sm me-2"
-              role="status"
-            ></span>
-            AI is typing...
+        <div *ngIf="sending" class="d-flex justify-content-start mb-4">
+          <div class="p-3 rounded-4 bg-light text-muted d-flex align-items-center">
+            <span class="spinner-grow spinner-grow-sm me-2 text-primary" role="status"></span>
+            <span class="small">AI thinking...</span>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="chat-footer p-3 bg-white border-top flex-shrink-0">
-      <form
-        [formGroup]="chatForm"
-        (ngSubmit)="sendMessage()"
-        class="d-flex mx-auto align-items-end"
-        style="max-width: 800px"
-      >
-        <textarea
-          class="form-control auto-expand-input me-2"
-          placeholder="Message..."
-          formControlName="message"
-          rows="1"
-          (input)="adjustHeight($event)"
-          (keydown.enter)="handleEnter($any($event))"
-        ></textarea>
-        <button
-          type="submit"
-          class="btn btn-primary btn-lg flex-shrink-0"
-          [disabled]="
+    <div class="chat-footer">
+      <form [formGroup]="chatForm" (ngSubmit)="sendMessage()">
+        <textarea class="auto-expand-input" placeholder="Type your message..." formControlName="message" rows="1"
+          (input)="adjustHeight($event)" (keydown.enter)="handleEnter($any($event))"></textarea>
+        <button type="submit" class="shadow-sm" [disabled]="
             chatForm.invalid ||
             sending ||
             (!currentConversationId && !isNewUnsavedConversation)
-          "
-        >
+          ">
           <i class="bi bi-send-fill"></i>
         </button>
       </form>
-      <small class="d-block text-center text-muted mt-2">VoxAI assistant</small>
     </div>
   </div>
 </div>
