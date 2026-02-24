@@ -1,65 +1,71 @@
-# 💬 Vox AI Chat: Chat com Gemini e Supabase
+# 💬 Vox AI Chat | Angular • Gemini • Supabase
 
-Este é um projeto de aplicação de chat construído com **Angular**, utilizando o **Supabase** como serviço de *backend* (autenticação e banco de dados), e a API do **Gemini** (Google AI) para o processamento e geração de respostas inteligentes.
-
-## ✨ Ideia do Projeto
-
-O principal objetivo é criar uma experiência de chat moderna e funcional, onde os usuários possam interagir de forma fluida com uma **Inteligência Artificial** robusta. A arquitetura atual suporta:
-
-* **Interações de Chat:** Conversas dinâmicas e em tempo real com a IA.
-* **Gerenciamento de Conversas:** Criação, visualização e persistência do histórico de chats por usuário.
-* **Respostas Inteligentes:** Utilização do modelo Gemini para fornecer conteúdo contextual e de alta qualidade.
-* **Autenticação Completa:** Gerenciamento seguro de usuários via Supabase (Login, Cadastro, Reset de Senha).
-
-## 🚀 Status do Deploy
-
-O projeto está atualmente em fase de desenvolvimento e pode ser acessado em:
-
-* **Link da Aplicação (Vercel):** [https://vox-ai-chat.vercel.app/login](https://vox-ai-chat.vercel.app/login)
-
-> *Este deploy é provisório. O projeto está em desenvolvimento ativo, e o ambiente definitivo pode ser alterado.*
+Esta é uma aplicação de chat de alta performance desenvolvida com **Angular**, integrando o **Supabase** como ecossistema de backend (Autenticação e PostgreSQL) e a API do **Gemini (Google AI)** para processamento de linguagem natural e geração de respostas contextuais.
 
 ---
 
-## 📸 Visualização do Projeto (Screenshots)
+## 🚀 Visão Geral do Projeto
 
-Confira a aparência da aplicação nas telas de autenticação e chat:
+O foco principal do desenvolvimento foi criar uma arquitetura escalável e reativa, onde a experiência do usuário é priorizada através de uma interface fluida e um gerenciamento de estado eficiente.
 
-### 1. Tela de Login/Signup
-<br>
-<img width="1020" height="638" alt="image" src="https://github.com/user-attachments/assets/19a98ee9-cf73-475b-92e0-6531c0312d46" />
-<br>
-
-### 2. Interface de Chat
-<br>
-<img width="1023" height="637" alt="image" src="https://github.com/user-attachments/assets/65475e52-1f4a-471e-8184-1c2f337f19ed" />
-<br>
+### Principais Funcionalidades
+* **Orquestração de IA:** Integração direta com o modelo Gemini para fornecer respostas inteligentes e contextuais.
+* **Persistência e Gestão de Dados (CRUD):** Gerenciamento completo do histórico de conversas. O usuário possui controle total para criar, **editar títulos** e **excluir chats** através de modais de confirmação, garantindo uma organização personalizada e segura.
+* **Gestão de Identidade Moderna:** Fluxo de autenticação robusto via Supabase Auth, suportando Login/Cadastro tradicional e **Autenticação Social com Google (OAuth2)** para uma experiência de acesso agilizada.
+* **Experiência do Usuário (UX):** Implementação de modais interativos para ações críticas e edição *inline*, otimizando o fluxo de navegação e usabilidade.
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Stack Técnica e Arquitetura
 
-| Categoria | Tecnologia | Uso |
+| Categoria | Tecnologia | Implementação |
 | :--- | :--- | :--- |
-| **Frontend** | Angular | Framework principal para a interface do usuário. |
-| **BaaS & DB** | Supabase | Autenticação de usuários, gerenciamento de perfis e armazenamento das conversas e mensagens. |
-| **Inteligência Artificial** | Google Gemini API | Motor de IA para gerar as respostas do chat. |
-| **HTTP** | HttpClient | Comunicação com a API do Gemini. |
+| **Frontend** | **Angular** | Framework principal com foco em componentes modulares e serviços reativos. |
+| **BaaS / Banco** | **Supabase** | PostgreSQL para armazenamento e JWT para sessões de usuário seguras. |
+| **Autenticação** | **Google OAuth2** | Integração de login social para facilitar o onboarding de usuários. |
+| **Inteligência** | **Google Gemini** | Engine de IA para processamento e geração de conteúdo. |
+| **Comunicação** | **HttpClient** | Consumo de APIs REST com tratamento de erros e interceptores. |
 
-## 💡 Próximas Melhorias e Roadmap
+---
 
-O projeto está em constante evolução. As seguintes melhorias estão sendo ativamente implementadas para garantir a qualidade, segurança e uma melhor experiência do usuário:
+## 🧪 Qualidade e Desenvolvimento (QA)
 
-### 1. 🧑‍💻 Melhoria na Experiência do Usuário (UX)
+O ciclo de desenvolvimento priorizou a confiabilidade do código. A aplicação conta com uma suíte de **testes unitários** que validam as regras de negócio nos serviços e componentes críticos.
 
-* **Telas de Autenticação:** Aprimoramento do design e do fluxo de usuário nas telas de **Login**, **Signup** e **Reset/Forgot Password** para torná-las mais intuitivas.
-* **Feedback Visual:** Adição de melhores indicadores de carregamento e mensagens de erro/sucesso para todas as ações do usuário.
+### Cobertura de Código (Code Coverage)
+Monitoramos métricas rigorosas para garantir a estabilidade do sistema:
+* **Statements & Branches:** Validação de todos os caminhos lógicos do código.
+* **Functions & Lines:** Garantia de que a execução do código atinge os níveis esperados de cobertura.
 
-### 2. 📱 Responsividade e Acessibilidade
+> **Nota:** O relatório de coverage é gerado automaticamente para guiar a evolução técnica e refatoração do sistema.
 
-* **Layout Mobile:** Implementação de um design responsivo completo para garantir que a aplicação seja totalmente funcional e visualmente agradável em **dispositivos móveis**.
+---
 
-### 3. ✅ Qualidade de Código e Testes
+## 📸 Visualização da Interface
 
-* **Unit Tests:** Criação de testes unitários abrangentes para os serviços (`AuthService`, `ChatService`, `SupabaseService`) e componentes críticos, garantindo a estabilidade e a facilidade de manutenção do código.
-* **Refatoração:** Otimização de código para melhorar a performance e a aderência aos padrões de desenvolvimento Angular.
+### 1. Autenticação e Social Login
+*Interface de entrada segura com suporte a credenciais padrão e Login via Google.*
+<br>
+<img width="1350" height="628" alt="login" src="https://github.com/user-attachments/assets/07fd2c4a-afe3-4333-a7a0-2535b6322f9a" />
+<br>
+### 2. Gestão de Conversas (CRUD)
+*Demonstração da edição de títulos e modais de confirmação para exclusão, garantindo uma gestão de dados segura.*
+<br>
+<img width="1345" height="638" alt="image" src="https://github.com/user-attachments/assets/11681255-8612-4ec2-9c9e-def3fabfdfa6" />
+<br>
+### 3. Evidência de Testes
+*Relatório de cobertura comprovando a saúde técnica do projeto.*
+<br>
+<img width="1019" height="681" alt="tests" src="https://github.com/user-attachments/assets/457dbe6c-8eea-498b-a4fd-80fd4ad412dd" />
+
+<br>
+
+---
+
+## 🌐 Deploy e Acesso
+
+O projeto está otimizado e disponível para demonstração:
+* **Link da Aplicação:** [vox-ai-chat.vercel.app](https://vox-ai-chat.vercel.app/login)
+
+---
+*Desenvolvido por Paulo Catto.*
