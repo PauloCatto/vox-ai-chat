@@ -49,6 +49,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   conversations: Conversation[] = [];
   messages: Message[] = [];
   sending: boolean = false;
+  deleting: boolean = false;
   apiError: string | null = null;
   isSidebarVisible: boolean = false;
   isNewUnsavedConversation: boolean = false;
@@ -371,7 +372,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   async executeDelete(conversationId: string): Promise<void> {
-    this.sending = true;
+    this.deleting = true;
     try {
       const { error } = await this.supabaseService
         .getClient()
@@ -399,7 +400,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       console.error('Error deleting conversation:', error);
       this.apiError = 'Failed to delete conversation.';
     } finally {
-      this.sending = false;
+      this.deleting = false;
     }
   }
 
@@ -434,11 +435,13 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.notify.error('Failed to log out. Please try again.');
     }
   }
+
   adjustHeight(event: any): void {
     const element = event.target;
     element.style.height = 'auto';
     element.style.height = element.scrollHeight + 'px';
   }
+
   handleEnter(event: Event): void {
     if (!(event instanceof KeyboardEvent) || event.shiftKey) return;
 
