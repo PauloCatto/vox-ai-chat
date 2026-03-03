@@ -73,11 +73,11 @@
   </div>
 
   <div class="main-content">
-    <div class="chat-header">
-      <button class="btn btn-icon d-lg-none me-3" type="button" (click)="toggleSidebar()">
-        <i class="bi bi-list fs-4"></i>
+    <div class="chat-header shadow-sm">
+      <button class="btn-icon d-lg-none me-3" type="button" (click)="toggleSidebar()">
+        <i class="bi bi-list fs-3 text-primary"></i>
       </button>
-      <h6 class="mb-0 flex-grow-1 text-truncate">
+      <h6 class="mb-0 flex-grow-1 text-truncate fw-bold">
         {{ currentConversationTitle || "New Chat" }}
       </h6>
     </div>
@@ -103,9 +103,10 @@
         </div>
 
         <div *ngIf="sending" class="d-flex justify-content-start mb-4">
-          <div class="p-3 rounded-4 bg-light text-muted d-flex align-items-center">
-            <span class="spinner-grow spinner-grow-sm me-2 text-primary" role="status"></span>
-            <span class="small">AI thinking...</span>
+          <div class="message-bubble assistant shadow-sm d-flex align-items-center px-4 py-3">
+            <div class="typing-indicator me-2">
+              <span></span><span></span><span></span>
+            </div>
           </div>
         </div>
       </div>
