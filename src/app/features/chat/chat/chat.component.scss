@@ -10,23 +10,16 @@ $border-color: var(--border-color);
   -webkit-tap-highlight-color: transparent;
 }
 
-html,
-body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-}
-
 .chat-container {
   height: 100vh;
   height: 100dvh;
   display: flex;
   width: 100vw;
   overflow: hidden;
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: fixed;
+  inset: 0;
   background: white;
+  z-index: 999;
 }
 
 .sidebar {
