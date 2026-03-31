@@ -15,12 +15,8 @@ import { UserProfile } from '../models/auth.model';
 export class AuthService {
   private supabase: SupabaseClient = this.supabaseService.getClient();
 
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(private supabaseService: SupabaseService) { }
 
-  /**
-   * Realiza o cadastro, login automático e criação de perfil.
-   * Retorna um objeto padronizado para facilitar o tratamento no componente.
-   */
   async signUp(
     email: string,
     password: string,
@@ -31,7 +27,6 @@ export class AuthService {
 
     if (signUpError) return { data: null, error: signUpError };
 
-    // Login automático após o cadastro (necessário para criar o perfil se houver RLS)
     const { data: signInData, error: signInError } =
       await this.supabase.auth.signInWithPassword({ email, password });
 

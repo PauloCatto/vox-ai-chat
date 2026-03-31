@@ -95,16 +95,13 @@
           [class.justify-content-end]="msg.role === 'user'" [class.justify-content-start]="msg.role === 'assistant'">
           <div class="message-bubble shadow-sm" [class.user]="msg.role === 'user'"
             [class.assistant]="msg.role === 'assistant'">
-            
-            <!-- Indicador de digitação dentro do balão enquanto o conteúdo está vazio -->
+
             <div *ngIf="!msg.content && msg.role === 'assistant'" class="typing-indicator my-1">
               <span></span><span></span><span></span>
             </div>
 
-            <!-- Conteúdo da mensagem (Markdown) -->
             <markdown *ngIf="msg.content" class="message-content" [data]="msg.content"></markdown>
-            
-            <!-- Horário da mensagem (só exibe quando houver conteúdo) -->
+
             <span *ngIf="msg.content" class="message-time">
               {{ msg.created_at | date: "shortTime" }}
             </span>
@@ -117,7 +114,6 @@
 
     <div class="chat-footer">
       <form [formGroup]="chatForm" (ngSubmit)="sendMessage()">
-        <!-- Preview da Imagem Selecionada -->
         <div *ngIf="imagePreview" class="image-preview-container">
           <img [src]="imagePreview" alt="Preview" class="img-preview" />
           <button type="button" class="btn-remove-image" (click)="removeSelectedFile()">
@@ -126,28 +122,25 @@
         </div>
 
         <button type="button" class="btn-voice" [class.recording]="isRecording" (click)="toggleRecording()"
-          [disabled]="sending || isStreaming" 
-          [title]="isRecording ? 'Parar gravação' : 'Ditar mensagem'">
+          [disabled]="sending || isStreaming" [title]="isRecording ? 'Parar gravação' : 'Ditar mensagem'">
           <i class="bi" [class.bi-mic]="!isRecording" [class.bi-mic-fill]="isRecording"></i>
           <span *ngIf="isRecording" class="pulse-ring"></span>
         </button>
 
-        <!-- Botão para ligar/desligar voz da IA -->
         <button type="button" class="btn-voice me-2" (click)="toggleVoice()"
           [title]="isVoiceEnabled ? 'Desativar voz da IA' : 'Ativar voz da IA'">
           <i class="bi" [class.bi-volume-up-fill]="isVoiceEnabled" [class.bi-volume-mute]="!isVoiceEnabled"
-             [class.text-primary]="isVoiceEnabled"></i>
+            [class.text-primary]="isVoiceEnabled"></i>
         </button>
 
-        <!-- Botão de Anexo (Clip) -->
-        <button type="button" class="btn-voice" (click)="fileInput.click()" 
-          [disabled]="sending || isStreaming" title="Anexar imagem">
+        <button type="button" class="btn-voice" (click)="fileInput.click()" [disabled]="sending || isStreaming"
+          title="Anexar imagem">
           <i class="bi bi-paperclip"></i>
         </button>
         <input type="file" #fileInput hidden (change)="onFileSelected($event)" accept="image/*" />
 
-        <textarea class="auto-expand-input" placeholder="Dite ou digite sua mensagem..." formControlName="message" rows="1"
-          (input)="adjustHeight($event)" (keydown.enter)="handleEnter($any($event))"></textarea>
+        <textarea class="auto-expand-input" placeholder="Dite ou digite sua mensagem..." formControlName="message"
+          rows="1" (input)="adjustHeight($event)" (keydown.enter)="handleEnter($any($event))"></textarea>
         <button type="submit" class="shadow-sm" [disabled]="
             chatForm.invalid ||
             sending ||
