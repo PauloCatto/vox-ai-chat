@@ -117,6 +117,14 @@
 
     <div class="chat-footer">
       <form [formGroup]="chatForm" (ngSubmit)="sendMessage()">
+        <!-- Preview da Imagem Selecionada -->
+        <div *ngIf="imagePreview" class="image-preview-container">
+          <img [src]="imagePreview" alt="Preview" class="img-preview" />
+          <button type="button" class="btn-remove-image" (click)="removeSelectedFile()">
+            <i class="bi bi-x-circle-fill"></i>
+          </button>
+        </div>
+
         <button type="button" class="btn-voice" [class.recording]="isRecording" (click)="toggleRecording()"
           [disabled]="sending || isStreaming" 
           [title]="isRecording ? 'Parar gravação' : 'Ditar mensagem'">
@@ -130,6 +138,13 @@
           <i class="bi" [class.bi-volume-up-fill]="isVoiceEnabled" [class.bi-volume-mute]="!isVoiceEnabled"
              [class.text-primary]="isVoiceEnabled"></i>
         </button>
+
+        <!-- Botão de Anexo (Clip) -->
+        <button type="button" class="btn-voice" (click)="fileInput.click()" 
+          [disabled]="sending || isStreaming" title="Anexar imagem">
+          <i class="bi bi-paperclip"></i>
+        </button>
+        <input type="file" #fileInput hidden (change)="onFileSelected($event)" accept="image/*" />
 
         <textarea class="auto-expand-input" placeholder="Dite ou digite sua mensagem..." formControlName="message" rows="1"
           (input)="adjustHeight($event)" (keydown.enter)="handleEnter($any($event))"></textarea>

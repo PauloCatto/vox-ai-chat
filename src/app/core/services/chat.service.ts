@@ -24,6 +24,7 @@ export class ChatService {
 
   async getAiResponse(
     history: { role: string; content: string }[],
+    image?: { mimeType: string, data: string }
   ): Promise<string | null> {
     if (!this.apiKey) {
       this.notify.error('Gemini API Key is missing.');
@@ -32,12 +33,21 @@ export class ChatService {
 
     const url = `${this.baseUrl}:generateContent?key=${this.apiKey}`;
 
-    const body = {
-      contents: history.map((msg) => ({
-        role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
-        parts: [{ text: msg.content }],
-      })),
-    };
+    const contents = history.map((msg) => ({
+      role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    }));
+
+    if (image && contents.length > 0 && contents[contents.length - 1].role === 'user') {
+      contents[contents.length - 1].parts.push({
+        inline_data: {
+          mime_type: image.mimeType,
+          data: image.data
+        }
+      } as any);
+    }
+
+    const body = { contents };
 
     try {
       const response = await lastValueFrom(
@@ -54,16 +64,27 @@ export class ChatService {
 
   async *streamAiResponse(
     history: { role: string; content: string }[],
+    image?: { mimeType: string, data: string }
   ): AsyncIterable<string> {
     if (!this.apiKey) return;
 
     const url = `${this.baseUrl}:streamGenerateContent?key=${this.apiKey}`;
-    const body = {
-      contents: history.map((msg) => ({
-        role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
-        parts: [{ text: msg.content }],
-      })),
-    };
+
+    const contents = history.map((msg) => ({
+      role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    }));
+
+    if (image && contents.length > 0 && contents[contents.length - 1].role === 'user') {
+      contents[contents.length - 1].parts.push({
+        inline_data: {
+          mime_type: image.mimeType,
+          data: image.data
+        }
+      } as any);
+    }
+
+    const body = { contents };
 
     try {
       const response = await fetch(url, {

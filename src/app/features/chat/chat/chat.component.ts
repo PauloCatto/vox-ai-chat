@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, NgZone, HostListener } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -65,6 +65,9 @@ export class ChatComponent implements OnInit, OnDestroy {
   private ttsBuffer: string = '';
   private utterances: SpeechSynthesisUtterance[] = [];
 
+  selectedFile: File | null = null;
+  imagePreview: string | null = null;
+
   private realtimeSubscription: RealtimeChannel | null = null;
   private tempMessageIds = new Set<string>();
 
@@ -77,6 +80,13 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.realtimeSubscription) {
       this.realtimeSubscription.unsubscribe();
+    }
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    if (window.innerWidth >= 992 && this.isSidebarVisible) {
+      this.isSidebarVisible = false;
     }
   }
 
@@ -170,6 +180,39 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 4 * 1024 * 1024) {
+        this.notify.error('O arquivo é muito grande. O limite é 4MB.');
+        return;
+      }
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeSelectedFile(): void {
+    this.selectedFile = null;
+    this.imagePreview = null;
+  }
+
+  private async fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  }
+
   toggleVoice(): void {
     this.isVoiceEnabled = !this.isVoiceEnabled;
     if (!this.isVoiceEnabled) {
@@ -204,7 +247,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       const splitPoint = lastPunctuation !== -1 ? lastPunctuation + 1 : this.ttsBuffer.length;
       const toSpeak = this.ttsBuffer.substring(0, splitPoint).trim();
       this.ttsBuffer = this.ttsBuffer.substring(splitPoint);
-      
+
       if (toSpeak) {
         this.speak(toSpeak);
       }
@@ -420,6 +463,10 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.utterances = [];
     this.ttsBuffer = '';
 
+    const currentFile = this.selectedFile;
+    const currentPreview = this.imagePreview;
+    this.removeSelectedFile();
+
     try {
       if (this.isNewUnsavedConversation) {
         const title =
@@ -445,11 +492,15 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.listenToNewMessages();
       }
 
+      const messageContentForDb = currentPreview
+        ? `${userMessageContent}\n\n![Image](${currentPreview})`
+        : userMessageContent;
+
       const userTempId = crypto.randomUUID();
       const tempUserMessage: Message = {
         id: userTempId,
         user_id: this.currentUserId,
-        content: userMessageContent,
+        content: messageContentForDb,
         created_at: new Date().toISOString(),
         role: 'user',
         conversation_id: this.currentConversationId!,
@@ -461,7 +512,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.currentConversationId!,
         this.currentUserId,
         'user',
-        userMessageContent,
+        messageContentForDb,
       );
 
       if (userMsgError) {
@@ -471,10 +522,19 @@ export class ChatComponent implements OnInit, OnDestroy {
         throw userMsgError;
       }
 
-      const historyForAi = this.messages.map((msg) => ({
+      const historyForAi = this.messages.slice(0, this.messages.length - 1).map((msg) => ({
         role: msg.role === 'user' ? 'user' : 'model',
         content: msg.content,
       }));
+      historyForAi.push({ role: 'user', content: userMessageContent });
+
+      let imageForAi = undefined;
+      if (currentFile) {
+        imageForAi = {
+          mimeType: currentFile.type,
+          data: await this.fileToBase64(currentFile),
+        };
+      }
 
       const aiTempId = crypto.randomUUID();
       const tempAiMessage: Message = {
@@ -490,15 +550,19 @@ export class ChatComponent implements OnInit, OnDestroy {
 
       let fullAiContent = '';
       try {
-        const stream = this.chatService.streamAiResponse(historyForAi);
+        const stream = this.chatService.streamAiResponse(
+          historyForAi,
+          imageForAi,
+        );
         for await (const chunk of stream) {
           fullAiContent += chunk;
           tempAiMessage.content = fullAiContent;
           this.processTTS(chunk);
           this.scrollToLastMessage();
         }
-      } catch (streamError) {
+      } catch (streamError: any) {
         console.error('Error during streaming:', streamError);
+        this.apiError = 'A IA não respondeu. A imagem pode ser muito grande ou o formato não é aceito.';
       } finally {
         this.isStreaming = false;
         this.sending = false;
@@ -511,9 +575,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
       if (!fullAiContent) {
         this.messages = this.messages.filter((m) => m.id !== aiTempId);
-        this.notify.error(
-          'The AI service is currently unresponsive. Please attempt your request again.',
-        );
+        this.notify.error(this.apiError || 'O serviço da IA está instável. Tente novamente.');
         return;
       }
 

@@ -194,6 +194,7 @@ $border-color: var(--border-color);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
 
     form {
+      position: relative;
       display: flex;
       align-items: flex-end;
       gap: 12px;
@@ -213,6 +214,59 @@ $border-color: var(--border-color);
         transform: translateY(-1px);
       }
     }
+  }
+}
+
+.image-preview-container {
+  position: absolute;
+  bottom: calc(100% + 15px);
+  left: 10px;
+  background: white;
+  padding: 6px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+  animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1);
+
+  .img-preview {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .btn-remove-image {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: white;
+    border: none;
+    padding: 0;
+    color: #ef4444;
+    font-size: 1.2rem;
+    line-height: 1;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -520,37 +574,20 @@ button[type="submit"] {
   }
 }
 
-.sidebar-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  z-index: 1040;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
 @media (max-width: 991.98px) {
   .sidebar {
     position: fixed;
     top: 0;
     left: 0;
+    bottom: 0;
+    z-index: 1050;
     transform: translateX(-100%);
     box-shadow: none;
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 
     &.show {
       transform: translateX(0);
-      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.15);
+      box-shadow: 15px 0 40px rgba(0, 0, 0, 0.2);
     }
 
     .conversation-item {
@@ -559,31 +596,48 @@ button[type="submit"] {
       }
     }
   }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5); /* Slate-900 com transparência */
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1040;
+    animation: fadeIn 0.3s ease;
+  }
 }
 
 @media (max-width: 576px) {
   .main-content {
     .chat-header {
       height: 60px;
-      padding: 0 0.8rem;
+      padding: 0 1rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 
       h6 {
-        font-size: 1.05rem;
+        font-size: 1rem;
+        font-weight: 600;
       }
     }
 
     .chat-body {
-      padding: 1rem 0.8rem;
+      padding: 0.75rem 0.75rem;
+      
+      &::after {
+        min-height: 100px; /* Garante que a última msg não fique atrás do input */
+      }
     }
 
     .message-bubble {
-      max-width: 93%;
-      padding: 12px 14px;
-      border-radius: 16px;
-      font-size: 0.95rem;
+      max-width: 88%;
+      padding: 10px 12px;
+      margin-bottom: 0.75rem !important;
+      font-size: 0.92rem;
 
       &.user {
         border-bottom-right-radius: 4px;
+        margin-left: auto;
       }
 
       &.assistant {
@@ -594,48 +648,76 @@ button[type="submit"] {
         padding: 10px;
         margin: 8px 0;
         font-size: 0.8rem;
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 8px;
+        overflow-x: auto;
       }
     }
 
     .chat-footer {
-      padding: 10px;
-      padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-
+      padding: 8px 12px;
+      padding-bottom: calc(8px + var(--safe-area-bottom));
+      
       form {
-        padding: 6px;
-        gap: 8px;
-        border-radius: 26px;
+        padding: 5px 8px;
+        gap: 6px;
+        border-radius: 20px;
+        
+        .btn-voice {
+          width: 38px;
+          height: 38px;
+          min-width: 38px;
+          i { font-size: 1.1rem; }
+        }
+
+        .auto-expand-input {
+          padding: 6px 8px;
+          font-size: 15px;
+          min-height: 34px;
+        }
+
+        button[type="submit"] {
+          width: 38px;
+          height: 38px;
+          min-width: 38px;
+        }
       }
     }
+  }
+}
 
-    .auto-expand-input {
-      padding: 8px 10px;
-      font-size: 16px;
+@media (max-width: 400px) {
+  .chat-footer form {
+    gap: 4px;
+    
+    .btn-voice {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      i { font-size: 1rem; }
     }
   }
+}
 
-  .btn-icon {
-    width: 40px;
-    height: 40px;
+// Estilos para imagens dentro das mensagens do chat (Markdown) 
+// Usando ::ng-deep para garantir que o estilo penetre no componente ngx-markdown
+:host ::ng-deep {
+  .message-content img,
+  markdown img {
+    max-width: 200px !important;
+    max-height: 200px !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    border-radius: 12px !important;
+    margin: 12px 0 !important;
+    display: block !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease-in-out;
 
-    i {
-      font-size: 1.5rem !important;
-    }
-  }
-
-  button[type="submit"] {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-  }
-
-  .sidebar .conversation-item {
-    .actions {
-      opacity: 1 !important;
-    }
-
-    .chat-title {
-      max-width: 70%;
+    &:hover {
+      transform: scale(1.05);
     }
   }
 }
