@@ -16,10 +16,11 @@ export class ChatService {
   private readonly notify = inject(NotificationService);
 
   private supabase: SupabaseClient = this.supabaseService.getClient();
-  private chatApiUrl: string = environment.chatApiUrl;
   private apiKey: string = environment.geminiApiKey;
 
-  constructor() {}
+  private readonly baseUrl = environment.chatApiUrl;
+
+  constructor() { }
 
   async getAiResponse(
     history: { role: string; content: string }[],
@@ -29,104 +30,122 @@ export class ChatService {
       return null;
     }
 
-    const url = `${this.chatApiUrl}?key=${this.apiKey}`;
+    const url = `${this.baseUrl}:generateContent?key=${this.apiKey}`;
+
     const body = {
       contents: history.map((msg) => ({
-        role: msg.role === 'assistant' ? 'model' : msg.role,
+        role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
         parts: [{ text: msg.content }],
       })),
     };
 
     try {
       const response = await lastValueFrom(
-        this.http.post<GeminiResponse>(url, body),
+        this.http.post<GeminiResponse>(url, body)
       );
 
-      const text = response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-
-      if (!text) {
-        this.notify.error('AI returned an empty response.');
-        return null;
-      }
-
-      return text;
+      return response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
     } catch (error: any) {
-      const errorMsg =
-        error.status === 429
-          ? 'Rate limit exceeded.'
-          : 'Failed to connect to AI Service.';
-
-      this.notify.error(errorMsg);
+      console.error('Erro na API:', error);
+      this.notify.error(`Erro ${error.status}: Verifique se o modelo está disponível na sua região.`);
       return null;
     }
   }
 
+  async *streamAiResponse(
+    history: { role: string; content: string }[],
+  ): AsyncIterable<string> {
+    if (!this.apiKey) return;
+
+    const url = `${this.baseUrl}:streamGenerateContent?key=${this.apiKey}`;
+    const body = {
+      contents: history.map((msg) => ({
+        role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
+        parts: [{ text: msg.content }],
+      })),
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        console.error('Erro no Stream:', err);
+        return;
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) return;
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        let startBracket = buffer.indexOf('{');
+        while (startBracket !== -1) {
+          let bracketCount = 0;
+          let endBracket = -1;
+
+          for (let i = startBracket; i < buffer.length; i++) {
+            if (buffer[i] === '{') bracketCount++;
+            else if (buffer[i] === '}') bracketCount--;
+
+            if (bracketCount === 0) {
+              endBracket = i;
+              break;
+            }
+          }
+
+          if (endBracket !== -1) {
+            const jsonStr = buffer.substring(startBracket, endBracket + 1);
+            try {
+              const json = JSON.parse(jsonStr);
+              const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (text) yield text;
+            } catch (e) { }
+            buffer = buffer.substring(endBracket + 1);
+            startBracket = buffer.indexOf('{');
+          } else {
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Streaming error:', error);
+    }
+  }
+
   createConversation(userId: string, title: string) {
-    return this.supabase
-      .from('conversations')
-      .insert({ user_id: userId, title })
-      .select()
-      .returns<Conversation[]>();
+    return this.supabase.from('conversations').insert({ user_id: userId, title }).select().returns<Conversation[]>();
   }
 
   getConversations(userId: string) {
-    return this.supabase
-      .from('conversations')
-      .select('*')
-      .eq('user_id', userId)
-      .returns<Conversation[]>();
+    return this.supabase.from('conversations').select('*').eq('user_id', userId).returns<Conversation[]>();
   }
 
-  async sendMessage(
-    conversationId: string,
-    userId: string,
-    role: string,
-    content: string,
-  ) {
+  async sendMessage(conversationId: string, userId: string, role: string, content: string) {
     const newMessage: Partial<Message> = {
       conversation_id: conversationId,
       user_id: userId,
       role: role as 'user' | 'assistant',
       content,
     };
-
-    const response = await this.supabase
-      .from('messages')
-      .insert(newMessage)
-      .select()
-      .returns<Message[]>();
-
-    if (response.error) {
-      this.notify.error('Failed to save message.');
-    }
-
-    return response;
+    return await this.supabase.from('messages').insert(newMessage).select().returns<Message[]>();
   }
 
   getMessages(conversationId: string) {
-    return this.supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true })
-      .returns<Message[]>();
+    return this.supabase.from('messages').select('*').eq('conversation_id', conversationId).order('created_at', { ascending: true }).returns<Message[]>();
   }
 
-  async updateConversationTitle(
-    conversationId: string,
-    newTitle: string,
-  ): Promise<PostgrestSingleResponse<null>> {
-    const response = await this.supabase
-      .from('conversations')
-      .update({ title: newTitle })
-      .eq('id', conversationId);
-
-    if (response.error) {
-      this.notify.error('Failed to update title.');
-    } else {
-      this.notify.success('Title updated.');
-    }
-
-    return response;
+  async updateConversationTitle(conversationId: string, newTitle: string) {
+    return await this.supabase.from('conversations').update({ title: newTitle }).eq('id', conversationId);
   }
 }

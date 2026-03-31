@@ -95,20 +95,23 @@
           [class.justify-content-end]="msg.role === 'user'" [class.justify-content-start]="msg.role === 'assistant'">
           <div class="message-bubble shadow-sm" [class.user]="msg.role === 'user'"
             [class.assistant]="msg.role === 'assistant'">
-            <markdown class="message-content" [data]="msg.content"></markdown>
-            <span class="message-time">
+            
+            <!-- Indicador de digitação dentro do balão enquanto o conteúdo está vazio -->
+            <div *ngIf="!msg.content && msg.role === 'assistant'" class="typing-indicator my-1">
+              <span></span><span></span><span></span>
+            </div>
+
+            <!-- Conteúdo da mensagem (Markdown) -->
+            <markdown *ngIf="msg.content" class="message-content" [data]="msg.content"></markdown>
+            
+            <!-- Horário da mensagem (só exibe quando houver conteúdo) -->
+            <span *ngIf="msg.content" class="message-time">
               {{ msg.created_at | date: "shortTime" }}
             </span>
           </div>
         </div>
 
-        <div *ngIf="sending" class="d-flex justify-content-start mb-4">
-          <div class="message-bubble assistant shadow-sm d-flex align-items-center px-4 py-3">
-            <div class="typing-indicator me-2">
-              <span></span><span></span><span></span>
-            </div>
-          </div>
-        </div>
+
       </div>
     </div>
 

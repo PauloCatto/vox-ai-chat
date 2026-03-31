@@ -9,7 +9,16 @@ export class SupabaseService {
   public client: SupabaseClient;
 
   constructor() {
-    this.client = createClient(environment.supabaseUrl, environment.supabaseKey);
+    this.client = createClient(environment.supabaseUrl, environment.supabaseKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        lock: async (name: string, _timeout: number, callback: () => Promise<any>) => {
+          return await callback();
+        }
+      }
+    });
   }
 
   getClient(): SupabaseClient {

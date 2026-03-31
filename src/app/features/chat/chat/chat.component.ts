@@ -56,6 +56,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   isSidebarVisible: boolean = false;
   isNewUnsavedConversation: boolean = false;
   searchQuery: string = '';
+  isStreaming: boolean = false;
 
   private realtimeSubscription: RealtimeChannel | null = null;
   private tempMessageIds = new Set<string>();
@@ -295,10 +296,35 @@ export class ChatComponent implements OnInit, OnDestroy {
         content: msg.content,
       }));
 
-      const aiResponseContent =
-        await this.chatService.getAiResponse(historyForAi);
+      const aiTempId = crypto.randomUUID();
+      const tempAiMessage: Message = {
+        id: aiTempId,
+        user_id: this.currentUserId,
+        content: '',
+        created_at: new Date().toISOString(),
+        role: 'assistant',
+        conversation_id: this.currentConversationId!,
+      };
+      this.messages.push(tempAiMessage);
+      this.isStreaming = true;
 
-      if (!aiResponseContent) {
+      let fullAiContent = '';
+      try {
+        const stream = this.chatService.streamAiResponse(historyForAi);
+        for await (const chunk of stream) {
+          fullAiContent += chunk;
+          tempAiMessage.content = fullAiContent;
+          this.scrollToLastMessage();
+        }
+      } catch (streamError) {
+        console.error('Error during streaming:', streamError);
+      } finally {
+        this.isStreaming = false;
+        this.sending = false;
+      }
+
+      if (!fullAiContent) {
+        this.messages = this.messages.filter((m) => m.id !== aiTempId);
         this.notify.error(
           'The AI service is currently unresponsive. Please attempt your request again.',
         );
@@ -310,24 +336,21 @@ export class ChatComponent implements OnInit, OnDestroy {
           this.currentConversationId!,
           this.currentUserId,
           'assistant',
-          aiResponseContent,
+          fullAiContent,
         );
 
-      if (saveError) {
-        this.notify.error(
-          "An error occurred while saving the assistant's response.",
-        );
-        throw saveError;
-      }
-
-      const aiMessage = (aiMessageData as unknown as Message[])[0];
-      if (aiMessage && !this.messages.some((msg) => msg.id === aiMessage.id)) {
-        this.messages.push(aiMessage);
+      if (!saveError && aiMessageData) {
+        const savedAiMessage = (aiMessageData as unknown as Message[])[0];
+        const index = this.messages.findIndex((m) => m.id === aiTempId);
+        if (index !== -1) {
+          this.messages[index] = savedAiMessage;
+        }
       }
     } catch (error: any) {
       console.error('[Internal Chat Error]:', error);
     } finally {
       this.sending = false;
+      this.isStreaming = false;
       messageControl?.enable();
       this.scrollToLastMessage();
 
