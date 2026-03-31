@@ -5,10 +5,9 @@ import Swal from 'sweetalert2';
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private toast = inject(HotToastService);
-private readonly commonOptions = {
-  position: 'top-center' as const,
-  dismissible: true,
-  icon: ' ',
+  private readonly commonOptions = {
+    position: 'top-center' as const,
+    dismissible: true,
   style: {
     width: 'auto',
     minWidth: '380px',

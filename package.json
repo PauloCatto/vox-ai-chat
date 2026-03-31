@@ -28,6 +28,8 @@
     "@supabase/supabase-js": "^2.77.0",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
+    "ngx-markdown": "^17.1.1",
+    "prismjs": "^1.29.0",
     "rxjs": "~7.8.0",
     "sweetalert2": "^11.26.17",
     "tslib": "^2.3.0",
@@ -46,6 +48,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "@types/prismjs": "^1.26.5",
     "typescript": "~5.4.2"
   }
 }

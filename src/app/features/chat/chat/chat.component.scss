@@ -315,44 +315,54 @@ button[type="submit"] {
     border: 1px solid rgba(0, 0, 0, 0.03);
   }
 
-  pre {
-    max-width: 100%;
-    overflow-x: auto;
-    background: #1e1e1e;
-    color: #d4d4d4;
-    padding: 12px;
-    border-radius: 8px;
-    margin: 12px 0;
-    font-size: 0.85rem;
-    white-space: pre;
+  ::ng-deep {
+    markdown {
+      p:last-child {
+        margin-bottom: 0;
+      }
 
-    &::-webkit-scrollbar {
-      height: 6px;
+      pre {
+        margin: 12px 0;
+        border-radius: 8px;
+        background: #1e1e1e !important;
+        padding: 0; // Prism handles padding
+      }
+
+      code {
+        font-family: "Fira Code", "Consolas", monospace;
+        font-size: 0.9em;
+      }
+
+      ul, ol {
+        margin-bottom: 0.5rem;
+        padding-left: 1.5rem;
+      }
+
+      blockquote {
+        border-left: 4px solid var(--primary-color);
+        padding-left: 1rem;
+        margin-left: 0;
+        color: inherit;
+        opacity: 0.8;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 0.9rem;
+
+        th, td {
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          padding: 8px;
+          text-align: left;
+        }
+
+        th {
+          background-color: rgba(0, 0, 0, 0.03);
+        }
+      }
     }
-
-    &::-webkit-scrollbar-thumb {
-      background: #555;
-      border-radius: 3px;
-    }
-  }
-
-  code {
-    font-family: inherit;
-    background: rgba(0, 0, 0, 0.06);
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-size: 0.9em;
-  }
-
-  pre code {
-    background: transparent;
-    padding: 0;
-    color: inherit;
-    font-size: 14px;
-  }
-
-  p:last-child {
-    margin-bottom: 0;
   }
 
   .message-content {

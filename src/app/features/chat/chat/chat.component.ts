@@ -17,6 +17,7 @@ import { Conversation, Message } from 'src/app/core/models/chat.model';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { NotificationService } from 'src/app/core/services/notification.service';
 import Swal from 'sweetalert2';
+import { MarkdownComponent } from 'ngx-markdown';
 
 @Component({
   selector: 'app-chat',
@@ -27,6 +28,7 @@ import Swal from 'sweetalert2';
     DatePipe,
     ModalComponent,
     FormsModule,
+    MarkdownComponent,
   ],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
