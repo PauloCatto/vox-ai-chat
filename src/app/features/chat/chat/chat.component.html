@@ -117,7 +117,21 @@
 
     <div class="chat-footer">
       <form [formGroup]="chatForm" (ngSubmit)="sendMessage()">
-        <textarea class="auto-expand-input" placeholder="Type your message..." formControlName="message" rows="1"
+        <button type="button" class="btn-voice" [class.recording]="isRecording" (click)="toggleRecording()"
+          [disabled]="sending || isStreaming" 
+          [title]="isRecording ? 'Parar gravação' : 'Ditar mensagem'">
+          <i class="bi" [class.bi-mic]="!isRecording" [class.bi-mic-fill]="isRecording"></i>
+          <span *ngIf="isRecording" class="pulse-ring"></span>
+        </button>
+
+        <!-- Botão para ligar/desligar voz da IA -->
+        <button type="button" class="btn-voice me-2" (click)="toggleVoice()"
+          [title]="isVoiceEnabled ? 'Desativar voz da IA' : 'Ativar voz da IA'">
+          <i class="bi" [class.bi-volume-up-fill]="isVoiceEnabled" [class.bi-volume-mute]="!isVoiceEnabled"
+             [class.text-primary]="isVoiceEnabled"></i>
+        </button>
+
+        <textarea class="auto-expand-input" placeholder="Dite ou digite sua mensagem..." formControlName="message" rows="1"
           (input)="adjustHeight($event)" (keydown.enter)="handleEnter($any($event))"></textarea>
         <button type="submit" class="shadow-sm" [disabled]="
             chatForm.invalid ||

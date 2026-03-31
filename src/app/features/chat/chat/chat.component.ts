@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, NgZone } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -41,6 +41,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private supabaseService = inject(SupabaseService);
   private notify = inject(NotificationService);
   private modalService = inject(NgbModal);
+  private zone = inject(NgZone);
 
   chatForm!: FormGroup;
   userFullName: string = 'Loading...';
@@ -57,6 +58,12 @@ export class ChatComponent implements OnInit, OnDestroy {
   isNewUnsavedConversation: boolean = false;
   searchQuery: string = '';
   isStreaming: boolean = false;
+  isRecording: boolean = false;
+  isVoiceEnabled: boolean = false;
+  private recognition: any;
+  private finalTranscript: string = '';
+  private ttsBuffer: string = '';
+  private utterances: SpeechSynthesisUtterance[] = [];
 
   private realtimeSubscription: RealtimeChannel | null = null;
   private tempMessageIds = new Set<string>();
@@ -64,6 +71,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initForm();
     this.initializeChat();
+    this.initSpeechRecognition();
   }
 
   ngOnDestroy(): void {
@@ -76,6 +84,170 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.chatForm = this.fb.group({
       message: ['', Validators.required],
     });
+  }
+
+  private initSpeechRecognition(): void {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      this.recognition = new SpeechRecognition();
+      this.recognition.lang = 'pt-BR';
+      this.recognition.continuous = true;
+      this.recognition.interimResults = true;
+
+      this.recognition.onstart = () => {
+        this.zone.run(() => {
+          this.isRecording = true;
+          this.finalTranscript = '';
+        });
+      };
+
+      this.recognition.onresult = (event: any) => {
+        let interimTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcriptChunk = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            this.finalTranscript += transcriptChunk;
+          } else {
+            interimTranscript += transcriptChunk;
+          }
+        }
+
+        this.zone.run(() => {
+          const fullTranscript = (this.finalTranscript + interimTranscript).trim();
+          if (fullTranscript) {
+            this.chatForm.patchValue({ message: fullTranscript });
+          }
+        });
+      };
+
+      this.recognition.onerror = (event: any) => {
+        this.zone.run(() => {
+          this.isRecording = false;
+
+          switch (event.error) {
+            case 'no-speech':
+              break;
+            case 'not-allowed':
+              this.notify.error(
+                'Microfone bloqueado. Por favor, permita o acesso nas configurações do navegador.'
+              );
+              break;
+            case 'network':
+              this.notify.error(
+                'Erro de rede: O reconhecimento de voz requer conexão com a internet.'
+              );
+              break;
+            default:
+              console.error('Speech recognition error:', event.error);
+          }
+        });
+      };
+
+      this.recognition.onend = () => {
+        this.zone.run(() => {
+          this.isRecording = false;
+        });
+      };
+    }
+  }
+
+  toggleRecording(): void {
+    if (!this.recognition) {
+      this.notify.error('Seu navegador não suporta reconhecimento de voz.');
+      return;
+    }
+
+    if (this.isRecording) {
+      this.recognition.stop();
+    } else {
+      try {
+        this.recognition.start();
+      } catch (e) {
+        console.error('Falha ao iniciar reconhecimento:', e);
+      }
+    }
+  }
+
+  toggleVoice(): void {
+    this.isVoiceEnabled = !this.isVoiceEnabled;
+    if (!this.isVoiceEnabled) {
+      window.speechSynthesis.cancel();
+      this.utterances = [];
+    } else {
+      // Pré-ativa o motor de voz
+      window.speechSynthesis.getVoices();
+      this.notify.success('Voz da IA ativada');
+    }
+  }
+
+  private processTTS(chunk: string): void {
+    if (!this.isVoiceEnabled) return;
+
+    this.ttsBuffer += chunk;
+
+    // Procura por pontuação que indique fim de frase
+    const lastPunctuation = Math.max(
+      this.ttsBuffer.lastIndexOf('. '),
+      this.ttsBuffer.lastIndexOf('! '),
+      this.ttsBuffer.lastIndexOf('? '),
+      this.ttsBuffer.lastIndexOf('\n'),
+      this.ttsBuffer.lastIndexOf(': ')
+    );
+
+    // Fala se houver uma frase completa (mínimo 10 chars) ou buffer muito grande
+    if (
+      (lastPunctuation !== -1 && lastPunctuation > 10) ||
+      this.ttsBuffer.length > 150
+    ) {
+      const splitPoint = lastPunctuation !== -1 ? lastPunctuation + 1 : this.ttsBuffer.length;
+      const toSpeak = this.ttsBuffer.substring(0, splitPoint).trim();
+      this.ttsBuffer = this.ttsBuffer.substring(splitPoint);
+      
+      if (toSpeak) {
+        this.speak(toSpeak);
+      }
+    }
+  }
+
+  private speak(text: string): void {
+    if (!window.speechSynthesis) return;
+
+    // Remove markdown e símbolos para a fala não ficar estranha
+    const cleanText = text.replace(/[*_#`~]/g, '').trim();
+    if (!cleanText || cleanText.length < 2) return;
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 1.1; // Um pouco mais rápido para fluir melhor com o texto
+
+    const performSpeech = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const ptVoice =
+        voices.find((v) => v.lang.includes('pt-BR') && v.name.includes('Google')) ||
+        voices.find((v) => v.lang.includes('pt-BR')) ||
+        voices.find((v) => v.lang.startsWith('pt'));
+
+      if (ptVoice) {
+        utterance.voice = ptVoice;
+      }
+
+      // Adiciona à lista para evitar que o Garbage Collector limpe a fala prematuramente em conversas longas
+      this.utterances.push(utterance);
+      utterance.onend = () => {
+        this.utterances = this.utterances.filter((u) => u !== utterance);
+      };
+
+      window.speechSynthesis.speak(utterance);
+    };
+
+    if (window.speechSynthesis.getVoices().length > 0) {
+      performSpeech();
+    } else {
+      // Se as vozes ainda não carregaram, aguarda o evento do navegador
+      window.speechSynthesis.onvoiceschanged = () => performSpeech();
+    }
   }
 
   private scrollToLastMessage(): void {
@@ -224,6 +396,10 @@ export class ChatComponent implements OnInit, OnDestroy {
   async sendMessage(): Promise<void> {
     const messageControl = this.chatForm.get('message');
 
+    if (this.isRecording && this.recognition) {
+      this.recognition.stop();
+    }
+
     if (
       this.chatForm.invalid ||
       this.sending ||
@@ -239,6 +415,10 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.apiError = null;
     messageControl?.disable();
     this.chatForm.reset();
+
+    window.speechSynthesis.cancel();
+    this.utterances = [];
+    this.ttsBuffer = '';
 
     try {
       if (this.isNewUnsavedConversation) {
@@ -314,6 +494,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         for await (const chunk of stream) {
           fullAiContent += chunk;
           tempAiMessage.content = fullAiContent;
+          this.processTTS(chunk);
           this.scrollToLastMessage();
         }
       } catch (streamError) {
@@ -321,6 +502,11 @@ export class ChatComponent implements OnInit, OnDestroy {
       } finally {
         this.isStreaming = false;
         this.sending = false;
+
+        if (this.isVoiceEnabled && this.ttsBuffer.trim()) {
+          this.speak(this.ttsBuffer);
+          this.ttsBuffer = '';
+        }
       }
 
       if (!fullAiContent) {
