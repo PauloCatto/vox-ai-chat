@@ -168,6 +168,7 @@ $border-color: var(--border-color);
 
   .chat-body {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 1.5rem;
@@ -185,13 +186,15 @@ $border-color: var(--border-color);
 
   .chat-footer {
     flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.9);
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     padding: 1rem;
     padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     z-index: 100;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.02);
 
     form {
       position: relative;
@@ -264,6 +267,7 @@ $border-color: var(--border-color);
     opacity: 0;
     transform: translateY(10px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -294,7 +298,7 @@ $border-color: var(--border-color);
 
 .auto-expand-input {
   flex: 1;
-  min-width: 0; // Essential for flex items to shrink below intrinsic size
+  min-width: 0;
   display: block;
   resize: none;
   min-height: 40px;
@@ -391,14 +395,31 @@ button[type="submit"] {
 }
 
 @keyframes pulse {
-  0% { transform: scale(0.95); opacity: 0.7; }
-  100% { transform: scale(1.6); opacity: 0; }
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
 }
 
 @keyframes micShake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-1px); }
-  75% { transform: translateX(1px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-1px);
+  }
+
+  75% {
+    transform: translateX(1px);
+  }
 }
 
 .message-bubble {
@@ -445,7 +466,8 @@ button[type="submit"] {
         font-size: 0.9em;
       }
 
-      ul, ol {
+      ul,
+      ol {
         margin-bottom: 0.5rem;
         padding-left: 1.5rem;
       }
@@ -464,7 +486,8 @@ button[type="submit"] {
         margin: 10px 0;
         font-size: 0.9rem;
 
-        th, td {
+        th,
+        td {
           border: 1px solid rgba(0, 0, 0, 0.1);
           padding: 8px;
           text-align: left;
@@ -601,7 +624,8 @@ button[type="submit"] {
   .sidebar-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.5); /* Slate-900 com transparência */
+    background: rgba(15, 23, 42, 0.5);
+    /* Slate-900 com transparência */
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     z-index: 1040;
@@ -615,6 +639,8 @@ button[type="submit"] {
       height: 60px;
       padding: 0 1rem;
       border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      flex-shrink: 0; // Prevent header from shrinking
+
 
       h6 {
         font-size: 1rem;
@@ -624,9 +650,10 @@ button[type="submit"] {
 
     .chat-body {
       padding: 0.75rem 0.75rem;
-      
+
       &::after {
-        min-height: 100px; /* Garante que a última msg não fique atrás do input */
+        min-height: 100px;
+        /* Garante que a última msg não fique atrás do input */
       }
     }
 
@@ -658,19 +685,22 @@ button[type="submit"] {
     .chat-footer {
       padding: 8px 12px;
       padding-bottom: calc(8px + var(--safe-area-bottom));
-      
+
       form {
         padding: 5px 8px;
         gap: 4px;
         border-radius: 24px;
         width: 100%;
-        
+
         .btn-voice {
           width: 36px;
           height: 36px;
           min-width: 36px;
           flex-shrink: 0;
-          i { font-size: 1.1rem; }
+
+          i {
+            font-size: 1.1rem;
+          }
         }
 
         .auto-expand-input {
@@ -695,12 +725,15 @@ button[type="submit"] {
 @media (max-width: 400px) {
   .chat-footer form {
     gap: 4px;
-    
+
     .btn-voice {
       width: 34px;
       height: 34px;
       min-width: 34px;
-      i { font-size: 1rem; }
+
+      i {
+        font-size: 1rem;
+      }
     }
   }
 }
@@ -708,6 +741,7 @@ button[type="submit"] {
 // Estilos para imagens dentro das mensagens do chat (Markdown) 
 // Usando ::ng-deep para garantir que o estilo penetre no componente ngx-markdown
 :host ::ng-deep {
+
   .message-content img,
   markdown img {
     max-width: 200px !important;
