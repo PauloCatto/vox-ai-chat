@@ -656,7 +656,8 @@ button[type="submit"] {
 
     .chat-body {
       padding: 0.75rem 0.75rem;
-
+      padding-bottom: 150px; // Espaço extra para não cobrir a última mensagem com o rodapé absoluto
+      
       &::after {
         min-height: 100px;
         /* Garante que a última msg não fique atrás do input */
@@ -690,15 +691,19 @@ button[type="submit"] {
 
     .chat-footer {
       padding: 10px 14px;
-      // Valor ideal para Safari/Chrome no iOS (34px é o padrão da barra do sistema)
       padding-bottom: calc(34px + env(safe-area-inset-bottom, 0px));
-      background: white;
-      border-top: 1px solid rgba(0, 0, 0, 0.08);
+      background: #f0fff0 !important; // VERDE CLARO TEMPORÁRIO PARA DIAGNÓSTICO
+      border-top: 2px solid #22c55e !important;
       flex-shrink: 0;
       z-index: 2000;
-      position: relative;
-      display: block !important;
+      position: absolute; // Força o posicionamento no fundo no Chrome
+      bottom: 0;
+      left: 0;
+      right: 0;
+      transform: translateZ(0); // Força aceleração de hardware no Chrome/iOS
+      -webkit-transform: translateZ(0);
       visibility: visible !important;
+      display: block !important;
 
       form {
         padding: 5px 8px;
