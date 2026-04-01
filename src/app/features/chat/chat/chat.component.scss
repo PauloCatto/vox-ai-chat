@@ -642,9 +642,7 @@ button[type="submit"] {
       display: flex;
       align-items: center;
       background: white;
-      z-index: 1051;
-      position: sticky;
-      top: 0;
+      z-index: 2000;
       // Ajuste para o "entalhe" (notch) do iPhone
       padding-top: env(safe-area-inset-top, 0px);
       box-sizing: content-box;
@@ -692,11 +690,13 @@ button[type="submit"] {
 
     .chat-footer {
       padding: 12px 14px;
-      // Padding reforçado para Chrome/Safari no iOS
-      padding-bottom: calc(25px + env(safe-area-inset-bottom, 0px));
+      // VALOR DE FORÇA BRUTA PARA DIAGNÓSTICO (60px + Safe Area)
+      padding-bottom: calc(60px + env(safe-area-inset-bottom, 20px));
       background: white;
-      border-top: 1px solid rgba(0, 0, 0, 0.08);
+      border-top: 2px solid #ff4444; // LINHA VERMELHA DE DIAGNÓSTICO
       flex-shrink: 0;
+      z-index: 2000;
+      position: relative;
 
       form {
         padding: 5px 8px;
