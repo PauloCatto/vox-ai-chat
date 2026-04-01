@@ -16,6 +16,8 @@ $border-color: var(--border-color);
   display: flex;
   width: 100vw;
   overflow: hidden;
+  position: fixed;
+  inset: 0;
   background: white;
   z-index: 999;
 }
@@ -637,7 +639,11 @@ button[type="submit"] {
       height: 60px;
       padding: 0 1rem;
       border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-      flex-shrink: 0; // Prevent header from shrinking
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      background: white;
+      z-index: 1051;
 
 
       h6 {
@@ -682,8 +688,8 @@ button[type="submit"] {
 
     .chat-footer {
       padding: 12px 14px;
-      // Valor agressivo para forçar a visibilidade no iOS/Android
-      padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+      // Precise adjustment for mobile safe areas (iOS/Android)
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
       background: white;
       border-top: 1px solid rgba(0, 0, 0, 0.08);
       flex-shrink: 0;
