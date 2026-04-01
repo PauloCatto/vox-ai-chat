@@ -15,13 +15,19 @@
   --warning-color: #f59e0b;
 }
 
+html, body {
+  height: 100%;
+  height: -webkit-fill-available; // Técnica para forçar a altura real no Safari
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--background-color);
   color: var(--text-primary);
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
 }
 
 .background-animation {

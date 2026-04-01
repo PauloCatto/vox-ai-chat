@@ -11,14 +11,11 @@ $border-color: var(--border-color);
 }
 
 .chat-container {
-  height: 100vh;
-  height: 100dvh;
-  height: -webkit-fill-available; // Fix for iOS browsers
+  height: 100%;
+  height: -webkit-fill-available;
   display: flex;
   width: 100vw;
   overflow: hidden;
-  position: fixed;
-  inset: 0;
   background: white;
   z-index: 999;
 }
@@ -684,11 +681,12 @@ button[type="submit"] {
     }
 
     .chat-footer {
-      padding: 10px 14px;
-      // Garante que o rodapé fique acima da barra de navegação do iOS/Android
-      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      padding: 12px 14px;
+      // Valor agressivo para forçar a visibilidade no iOS/Android
+      padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
       background: white;
       border-top: 1px solid rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
 
       form {
         padding: 5px 8px;
