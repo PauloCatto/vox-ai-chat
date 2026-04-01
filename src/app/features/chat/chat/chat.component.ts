@@ -219,7 +219,6 @@ export class ChatComponent implements OnInit, OnDestroy {
       window.speechSynthesis.cancel();
       this.utterances = [];
     } else {
-      // Pré-ativa o motor de voz
       window.speechSynthesis.getVoices();
       this.notify.success('Voz da IA ativada');
     }
@@ -230,7 +229,6 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     this.ttsBuffer += chunk;
 
-    // Procura por pontuação que indique fim de frase
     const lastPunctuation = Math.max(
       this.ttsBuffer.lastIndexOf('. '),
       this.ttsBuffer.lastIndexOf('! '),
@@ -239,7 +237,6 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.ttsBuffer.lastIndexOf(': ')
     );
 
-    // Fala se houver uma frase completa (mínimo 10 chars) ou buffer muito grande
     if (
       (lastPunctuation !== -1 && lastPunctuation > 10) ||
       this.ttsBuffer.length > 150
@@ -257,13 +254,12 @@ export class ChatComponent implements OnInit, OnDestroy {
   private speak(text: string): void {
     if (!window.speechSynthesis) return;
 
-    // Remove markdown e símbolos para a fala não ficar estranha
     const cleanText = text.replace(/[*_#`~]/g, '').trim();
     if (!cleanText || cleanText.length < 2) return;
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'pt-BR';
-    utterance.rate = 1.1; // Um pouco mais rápido para fluir melhor com o texto
+    utterance.rate = 1.1;
 
     const performSpeech = () => {
       const voices = window.speechSynthesis.getVoices();
@@ -276,7 +272,6 @@ export class ChatComponent implements OnInit, OnDestroy {
         utterance.voice = ptVoice;
       }
 
-      // Adiciona à lista para evitar que o Garbage Collector limpe a fala prematuramente em conversas longas
       this.utterances.push(utterance);
       utterance.onend = () => {
         this.utterances = this.utterances.filter((u) => u !== utterance);
@@ -288,7 +283,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (window.speechSynthesis.getVoices().length > 0) {
       performSpeech();
     } else {
-      // Se as vozes ainda não carregaram, aguarda o evento do navegador
       window.speechSynthesis.onvoiceschanged = () => performSpeech();
     }
   }
