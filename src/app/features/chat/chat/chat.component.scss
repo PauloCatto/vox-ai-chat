@@ -12,12 +12,10 @@ $border-color: var(--border-color);
 
 .chat-container {
   height: 100%;
-  height: -webkit-fill-available;
+  height: 100dvh;
   display: flex;
   width: 100vw;
   overflow: hidden;
-  position: fixed;
-  inset: 0;
   background: white;
   z-index: 999;
 }
@@ -688,8 +686,8 @@ button[type="submit"] {
 
     .chat-footer {
       padding: 12px 14px;
-      // Precise adjustment for mobile safe areas (iOS/Android)
-      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      // Balanced padding for mobile safe areas (iOS/Android)
+      padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
       background: white;
       border-top: 1px solid rgba(0, 0, 0, 0.08);
       flex-shrink: 0;

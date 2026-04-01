@@ -17,12 +17,12 @@
 
 html, body {
   height: 100%;
-  height: -webkit-fill-available;
+  height: 100dvh;
   width: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
-  position: fixed; // Helps scrolling issues on some mobile browsers
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
