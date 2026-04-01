@@ -689,20 +689,27 @@ button[type="submit"] {
     }
 
     .chat-footer {
-      padding: 12px 14px;
-      // VALOR DE FORÇA BRUTA PARA DIAGNÓSTICO (60px + Safe Area)
-      padding-bottom: calc(60px + env(safe-area-inset-bottom, 20px));
+      padding: 10px 14px;
+      // Valor ideal para Safari/Chrome no iOS (34px é o padrão da barra do sistema)
+      padding-bottom: calc(34px + env(safe-area-inset-bottom, 0px));
       background: white;
-      border-top: 2px solid #ff4444; // LINHA VERMELHA DE DIAGNÓSTICO
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
       flex-shrink: 0;
       z-index: 2000;
       position: relative;
+      display: block !important;
+      visibility: visible !important;
 
       form {
         padding: 5px 8px;
-        gap: 4px;
+        gap: 6px;
         border-radius: 24px;
         width: 100%;
+        display: flex !important;
+        align-items: center !important;
+        min-height: 48px;
+        background: white;
+        visibility: visible !important;
 
         .btn-voice {
           width: 36px;
@@ -716,11 +723,13 @@ button[type="submit"] {
         }
 
         .auto-expand-input {
-          padding: 8px;
-          font-size: 16px; // Previne zoom no iOS ao focar
+          padding: 8px 10px;
+          font-size: 16px;
           min-height: 38px;
-          flex: 1;
-          min-width: 0;
+          height: auto;
+          flex: 1 1 auto;
+          min-width: 100px; // Garante que o campo não suma
+          display: block !important;
         }
 
         button[type="submit"] {
