@@ -71,16 +71,20 @@ export class ChatComponent implements OnInit, OnDestroy {
   private realtimeSubscription: RealtimeChannel | null = null;
   private tempMessageIds = new Set<string>();
 
+  private visualViewportHandler: (() => void) | null = null;
+
   ngOnInit(): void {
     this.initForm();
     this.initializeChat();
     this.initSpeechRecognition();
+    this.initVisualViewportHandler();
   }
 
   ngOnDestroy(): void {
     if (this.realtimeSubscription) {
       this.realtimeSubscription.unsubscribe();
     }
+    this.destroyVisualViewportHandler();
   }
 
   @HostListener('window:resize')
@@ -88,6 +92,48 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (window.innerWidth >= 992 && this.isSidebarVisible) {
       this.isSidebarVisible = false;
     }
+  }
+
+  private initVisualViewportHandler(): void {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+
+    const updateLayout = () => {
+      const vv = window.visualViewport!;
+      const container = document.querySelector('.chat-container') as HTMLElement;
+      if (!container) return;
+
+      container.style.height = `${vv.height}px`;
+      container.style.top = `${vv.offsetTop}px`;
+    };
+
+    this.visualViewportHandler = () => {
+      requestAnimationFrame(updateLayout);
+    };
+
+    window.visualViewport.addEventListener('resize', this.visualViewportHandler);
+    window.visualViewport.addEventListener('scroll', this.visualViewportHandler);
+
+    document.addEventListener('touchmove', this.preventBodyScroll, { passive: false });
+  }
+
+  private preventBodyScroll = (e: TouchEvent): void => {
+    const target = e.target as HTMLElement;
+    if (target.closest('.chat-body') || target.closest('.conversation-container')) {
+      return;
+    }
+    if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
+      return;
+    }
+    e.preventDefault();
+  };
+
+  private destroyVisualViewportHandler(): void {
+    if (window.visualViewport && this.visualViewportHandler) {
+      window.visualViewport.removeEventListener('resize', this.visualViewportHandler);
+      window.visualViewport.removeEventListener('scroll', this.visualViewportHandler);
+    }
+    document.removeEventListener('touchmove', this.preventBodyScroll);
+    this.visualViewportHandler = null;
   }
 
   private initForm(): void {
