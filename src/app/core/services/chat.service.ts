@@ -20,7 +20,24 @@ export class ChatService {
 
   private readonly baseUrl = environment.chatApiUrl;
 
+  //Retry delays in ms: 2s → 5s → 10s
+  private readonly RETRY_DELAYS = [2000, 5000, 10000];
+  private readonly MAX_RETRIES = 3;
+
   constructor() { }
+
+
+  //Checks if an HTTP status code is retryable (rate limit or transient error).
+
+  private isRetryableStatus(status: number): boolean {
+    return status === 429 || status === 400 || status === 503;
+  }
+
+  //Waits for the specified number of milliseconds.
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
   async getAiResponse(
     history: { role: string; content: string }[],
@@ -49,17 +66,29 @@ export class ChatService {
 
     const body = { contents };
 
-    try {
-      const response = await lastValueFrom(
-        this.http.post<GeminiResponse>(url, body)
-      );
+    for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
+      try {
+        const response = await lastValueFrom(
+          this.http.post<GeminiResponse>(url, body)
+        );
+        return response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
+      } catch (error: any) {
+        const status = error?.status || error?.error?.code;
 
-      return response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
-    } catch (error: any) {
-      console.error('Erro na API:', error);
-      this.notify.error(`Erro ${error.status}: Verifique se o modelo está disponível na sua região.`);
-      return null;
+        if (this.isRetryableStatus(status) && attempt < this.MAX_RETRIES) {
+          const waitTime = this.RETRY_DELAYS[attempt];
+          console.warn(`[ChatService] Attempt ${attempt + 1}/${this.MAX_RETRIES} failed (${status}). Retrying in ${waitTime / 1000}s...`);
+          await this.delay(waitTime);
+          continue;
+        }
+
+        console.error('Erro na API:', error);
+        this.notify.error(`Erro ${status}: Verifique se o modelo está disponível na sua região.`);
+        return null;
+      }
     }
+
+    return null;
   }
 
   async *streamAiResponse(
@@ -84,21 +113,52 @@ export class ChatService {
       } as any);
     }
 
-    const body = { contents };
+    const body = JSON.stringify({ contents });
+    let response: Response | null = null;
 
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+    for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        });
 
-      if (!response.ok) {
-        const err = await response.json();
-        console.error('Erro no Stream:', err);
+        if (response.ok) {
+          break;
+        }
+
+        if (this.isRetryableStatus(response.status) && attempt < this.MAX_RETRIES) {
+          const waitTime = this.RETRY_DELAYS[attempt];
+          console.warn(
+            `[ChatService] Stream attempt ${attempt + 1}/${this.MAX_RETRIES} failed (${response.status}). Retrying in ${waitTime / 1000}s...`
+          );
+          await this.delay(waitTime);
+          response = null;
+          continue;
+        }
+
+        const err = await response.json().catch(() => ({}));
+        console.error('Erro no Stream:', response.status, err);
+        this.notify.error(
+          `A IA está temporariamente indisponível (${response.status}). Tente novamente em alguns segundos.`
+        );
+        return;
+      } catch (fetchError) {
+        if (attempt < this.MAX_RETRIES) {
+          const waitTime = this.RETRY_DELAYS[attempt];
+          console.warn(`[ChatService] Network error on attempt ${attempt + 1}. Retrying in ${waitTime / 1000}s...`);
+          await this.delay(waitTime);
+          continue;
+        }
+        console.error('Streaming network error:', fetchError);
         return;
       }
+    }
 
+    if (!response || !response.ok) return;
+
+    try {
       const reader = response.body?.getReader();
       if (!reader) return;
 
