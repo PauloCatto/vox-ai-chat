@@ -4,6 +4,6 @@ export const environment = {
   supabaseKey:
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlxdHVtbGN2dmhtbW1hYW1sY2F5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NzczOTAsImV4cCI6MjA3NzM1MzM5MH0.ZmjGafui4io8yx-82XKi72STcDk8B0E_xd_1UYNd4-Y',
   geminiApiKey:
-    'AIzaSyDZa9tb_MSY6bleMRzrRcF_hzXFgbT2mmE',
+    'AIzaSyB-7FWJe8FdFrVkMyQys7bxw-yYdztmNkA',
   chatApiUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash',
 };
