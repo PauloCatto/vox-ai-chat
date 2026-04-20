@@ -24,16 +24,70 @@ export class ChatService {
   private readonly RETRY_DELAYS = [2000, 5000, 10000];
   private readonly MAX_RETRIES = 3;
 
+  private readonly GEMINI_TOOLS = [{
+    functionDeclarations: [
+      {
+        name: "get_current_time",
+        description: "Obtém a data, hora exata atual e timezone.",
+      },
+      {
+        name: "get_weather",
+        description: "Obtém a previsão do tempo atual para uma cidade especificada.",
+        parameters: {
+          type: "OBJECT",
+          properties: {
+            location: { type: "STRING", description: "O nome da cidade (ex: São Paulo, Rio de Janeiro)" }
+          },
+          required: ["location"]
+        }
+      },
+      {
+        name: "calculate_math",
+        description: "Resolve expressões matemáticas complexas.",
+        parameters: {
+          type: "OBJECT",
+          properties: {
+            expression: { type: "STRING", description: "Expressão matemática válida em eval() (ex: 2+2*(10/5))" }
+          },
+          required: ["expression"]
+        }
+      }
+    ]
+  }];
+
+  private localTools: Record<string, Function> = {
+    get_current_time: () => {
+      const now = new Date();
+      return {
+        date: now.toLocaleDateString('pt-BR'),
+        time: now.toLocaleTimeString('pt-BR'),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      };
+    },
+    get_weather: (args: { location: string }) => {
+      const mockTemps = [22, 25, 28, 30, 18, 15, 32];
+      const temp = mockTemps[Math.floor(Math.random() * mockTemps.length)];
+      return {
+        location: args.location,
+        temperature: `${temp}ºC`,
+        condition: temp > 25 ? "Ensolarado" : "Pancadas de chuva"
+      };
+    },
+    calculate_math: (args: { expression: string }) => {
+      try {
+        const result = new Function(`return ${args.expression}`)();
+        return { result };
+      } catch (e) {
+        return { error: "Expressão matemática inválida." };
+      }
+    }
+  };
+
   constructor() { }
-
-
-  //Checks if an HTTP status code is retryable (rate limit or transient error).
 
   private isRetryableStatus(status: number): boolean {
     return status === 429 || status === 400 || status === 503;
   }
-
-  //Waits for the specified number of milliseconds.
 
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -64,7 +118,11 @@ export class ChatService {
       } as any);
     }
 
-    const body = { contents };
+    const systemInstruction = {
+      parts: [{ text: "Você é um agente autônomo inteligente do Vox AI. Você possui ferramentas (tools) para buscar dados atualizados do mundo real. SEMPRE invoque as ferramentas apropriadas se o usuário perguntar as horas, clima, ou quiser realizar cálculos matemáticos avançados." }]
+    };
+
+    const body = { contents, systemInstruction, tools: this.GEMINI_TOOLS };
 
     for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
       try {
@@ -99,7 +157,11 @@ export class ChatService {
 
     const url = `${this.baseUrl}:streamGenerateContent?key=${this.apiKey}`;
 
-    const contents = history.map((msg) => ({
+    const systemInstruction = {
+      parts: [{ text: "Você é um agente autônomo. Você possui ferramentas (tools) para buscar dados em tempo real. Priorize USAR A FERRAMENTA se o contexto pedir por horas locais, clima de cidades ou matemática. Nunca diga que não pode saber as horas sem antes tentar usar a ferramenta `get_current_time`." }]
+    };
+
+    let contents: any[] = history.map((msg) => ({
       role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
       parts: [{ text: msg.content }],
     }));
@@ -110,97 +172,152 @@ export class ChatService {
           mime_type: image.mimeType,
           data: image.data
         }
-      } as any);
+      });
     }
 
-    const body = JSON.stringify({ contents });
-    let response: Response | null = null;
+    let isAgentLooping = true;
 
-    for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
-      try {
-        response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body,
-        });
+    while (isAgentLooping) {
+      isAgentLooping = false;
 
-        if (response.ok) {
-          break;
-        }
+      const bodyPayload = {
+        contents,
+        systemInstruction,
+        tools: this.GEMINI_TOOLS
+      };
 
-        if (this.isRetryableStatus(response.status) && attempt < this.MAX_RETRIES) {
-          const waitTime = this.RETRY_DELAYS[attempt];
-          console.warn(
-            `[ChatService] Stream attempt ${attempt + 1}/${this.MAX_RETRIES} failed (${response.status}). Retrying in ${waitTime / 1000}s...`
+      const body = JSON.stringify(bodyPayload);
+      let response: Response | null = null;
+
+      for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
+        try {
+          response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body,
+          });
+
+          if (response.ok) {
+            break;
+          }
+
+          if (this.isRetryableStatus(response.status) && attempt < this.MAX_RETRIES) {
+            const waitTime = this.RETRY_DELAYS[attempt];
+            console.warn(
+              `[ChatService] Stream attempt ${attempt + 1}/${this.MAX_RETRIES} failed (${response.status}). Retrying in ${waitTime / 1000}s...`
+            );
+            await this.delay(waitTime);
+            response = null;
+            continue;
+          }
+
+          const err = await response.json().catch(() => ({}));
+          console.error('Erro no Stream:', response.status, err);
+          this.notify.error(
+            `A IA está temporariamente indisponível (${response.status}). Tente novamente em alguns segundos.`
           );
-          await this.delay(waitTime);
-          response = null;
-          continue;
+          return;
+        } catch (fetchError) {
+          if (attempt < this.MAX_RETRIES) {
+            const waitTime = this.RETRY_DELAYS[attempt];
+            console.warn(`[ChatService] Network error on attempt ${attempt + 1}. Retrying in ${waitTime / 1000}s...`);
+            await this.delay(waitTime);
+            continue;
+          }
+          console.error('Streaming network error:', fetchError);
+          return;
         }
-
-        const err = await response.json().catch(() => ({}));
-        console.error('Erro no Stream:', response.status, err);
-        this.notify.error(
-          `A IA está temporariamente indisponível (${response.status}). Tente novamente em alguns segundos.`
-        );
-        return;
-      } catch (fetchError) {
-        if (attempt < this.MAX_RETRIES) {
-          const waitTime = this.RETRY_DELAYS[attempt];
-          console.warn(`[ChatService] Network error on attempt ${attempt + 1}. Retrying in ${waitTime / 1000}s...`);
-          await this.delay(waitTime);
-          continue;
-        }
-        console.error('Streaming network error:', fetchError);
-        return;
       }
-    }
 
-    if (!response || !response.ok) return;
+      if (!response || !response.ok) return;
 
-    try {
-      const reader = response.body?.getReader();
-      if (!reader) return;
+      try {
+        const reader = response.body?.getReader();
+        if (!reader) return;
 
-      const decoder = new TextDecoder();
-      let buffer = '';
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let functionCalls: any[] = [];
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
-        let startBracket = buffer.indexOf('{');
-        while (startBracket !== -1) {
-          let bracketCount = 0;
-          let endBracket = -1;
+          buffer += decoder.decode(value, { stream: true });
+          let startBracket = buffer.indexOf('{');
+          while (startBracket !== -1) {
+            let bracketCount = 0;
+            let endBracket = -1;
 
-          for (let i = startBracket; i < buffer.length; i++) {
-            if (buffer[i] === '{') bracketCount++;
-            else if (buffer[i] === '}') bracketCount--;
+            for (let i = startBracket; i < buffer.length; i++) {
+              if (buffer[i] === '{') bracketCount++;
+              else if (buffer[i] === '}') bracketCount--;
 
-            if (bracketCount === 0) {
-              endBracket = i;
+              if (bracketCount === 0) {
+                endBracket = i;
+                break;
+              }
+            }
+
+            if (endBracket !== -1) {
+              const jsonStr = buffer.substring(startBracket, endBracket + 1);
+              try {
+                const json = JSON.parse(jsonStr);
+                const part = json?.candidates?.[0]?.content?.parts?.[0];
+
+                if (part?.text) {
+                  yield part.text;
+                }
+
+                if (part?.functionCall) {
+                  functionCalls.push(part.functionCall);
+                }
+              } catch (e) { }
+              buffer = buffer.substring(endBracket + 1);
+              startBracket = buffer.indexOf('{');
+            } else {
               break;
             }
           }
-
-          if (endBracket !== -1) {
-            const jsonStr = buffer.substring(startBracket, endBracket + 1);
-            try {
-              const json = JSON.parse(jsonStr);
-              const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (text) yield text;
-            } catch (e) { }
-            buffer = buffer.substring(endBracket + 1);
-            startBracket = buffer.indexOf('{');
-          } else {
-            break;
-          }
         }
+
+        if (functionCalls.length > 0) {
+          const uniqueCalls = new Map();
+          for (const fc of functionCalls) {
+            uniqueCalls.set(fc.name, fc);
+          }
+
+          const modelParts: any[] = [];
+          const functionResponsesParts: any[] = [];
+
+          for (const fc of uniqueCalls.values()) {
+            console.log(`[Agent] Rodou Tool: ${fc.name}`, fc.args);
+            modelParts.push({ functionCall: fc });
+
+            let result;
+            if (this.localTools[fc.name]) {
+              result = await Promise.resolve(this.localTools[fc.name](fc.args || {}));
+            } else {
+              result = { error: "Unknown tool" };
+            }
+
+            functionResponsesParts.push({
+              functionResponse: {
+                name: fc.name,
+                response: result
+              }
+            });
+          }
+
+          contents.push({ role: 'model', parts: modelParts });
+          contents.push({ role: 'user', parts: functionResponsesParts });
+
+          isAgentLooping = true;
+        }
+
+      } catch (error) {
+        console.error('Streaming error:', error);
       }
-    } catch (error) {
-      console.error('Streaming error:', error);
     }
   }
 
