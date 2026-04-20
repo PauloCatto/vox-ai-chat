@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -21,6 +21,7 @@ export class LoginComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   loginForm!: FormGroup;
   loading: boolean = false;
@@ -53,7 +54,12 @@ export class LoginComponent implements OnInit {
       const { error } = await this.authService.signIn(email, password);
 
       if (error) {
-        this.errorMessage = error.message;
+        if (error.message.toLowerCase().includes('invalid login credentials')) {
+          this.errorMessage = 'No account found with these credentials. Please check your details or sign up.';
+        } else {
+          this.errorMessage = error.message;
+        }
+        this.cdr.detectChanges();
         return;
       }
 
@@ -61,8 +67,10 @@ export class LoginComponent implements OnInit {
     } catch (err) {
       console.error('Unexpected error:', err);
       this.errorMessage = 'An unexpected error occurred. Please try again.';
+      this.cdr.detectChanges();
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
