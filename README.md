@@ -1,18 +1,19 @@
-# 💬 Vox AI Chat | Angular • Gemini • Supabase
+# 💬 Vox AI Agent | Angular • Gemini 2.5 • Supabase
 
-Esta é uma aplicação de chat de alta performance desenvolvida com **Angular**, integrando o **Supabase** como ecossistema de backend (Autenticação e PostgreSQL) e a API do **Gemini (Google AI)** para processamento de linguagem natural e geração de respostas contextuais.
+Esta é uma aplicação de alta performance desenvolvida com **Angular**, integrando o **Supabase** como ecossistema de backend (Autenticação e PostgreSQL) e a API do **Gemini (Google AI)** como motor para um **Agente Autônomo Avançado**.
 
 ---
 
 ## 🚀 Visão Geral do Projeto
 
-O foco principal do desenvolvimento foi criar uma arquitetura escalável e reativa, onde a experiência do usuário é priorizada através de uma interface fluida e um gerenciamento de estado eficiente.
+O foco principal do desenvolvimento foi criar uma arquitetura escalável e reativa, onde a IA não atua apenas como um Chatbot estático, mas como um **Agente Inteligente**. Através da customização do fluxo de requisições com um *Agentic Loop* e *Function Calling (Tools)*, o Vox AI descobre dados em tempo real e executa códigos internamente antes de devolver a resposta, garantindo velocidade contínua via Streaming e controle da alucinação.
 
 ### Principais Funcionalidades
-* **Orquestração de IA:** Integração direta com o modelo Gemini para fornecer respostas inteligentes e contextuais.
-* **Persistência e Gestão de Dados (CRUD):** Gerenciamento completo do histórico de conversas. O usuário possui controle total para criar, **editar títulos** e **excluir chats** através de modais de confirmação, garantindo uma organização personalizada e segura.
-* **Gestão de Identidade Moderna:** Fluxo de autenticação robusto via Supabase Auth, suportando Login/Cadastro tradicional e **Autenticação Social com Google (OAuth2)** para uma experiência de acesso agilizada.
-* **Experiência do Usuário (UX):** Implementação de modais interativos para ações críticas e edição *inline*, otimizando o fluxo de navegação e usabilidade.
+* **Agente Autônomo (Function Calling):** Integração profunda com o Gemini 2.5 Flash permitindo que o modelo invoque funções como descobrir a hora certa local, consultar o clima via mocks/APIs e resolver fórmulas matemáticas complexas autonomamente através de um *Loop ReAct*.
+* **Streaming Assíncrono:** Retorno de mensagens visuais com efeito datilografia perfeitamente gerenciado juntamente com as "paradas invisíveis" do modelo durante a execução das ferramentas do Agente.
+* **Persistência e Gestão de Dados (CRUD):** Gerenciamento completo dos históricos de conversa atrelados aos usuários (Postgres Supabase). Controle total para criar, **editar títulos** dinamicamente e **excluir chats** com modais de confirmação na UI.
+* **Gestão de Identidade Moderna:** Fluxo de autenticação moderno via Auth Supabase, suportando Email/Senha clássicos e **Social Login com Google (OAuth2)** para um Onboarding sem fricção.
+* **Speech-to-Text & Text-to-Speech:** Funcionalidades de voz nativas da WebAPI implementadas para ditado via microfone e sintetização da voz do próprio modelo lendo as respostas em tempo real.
 
 ---
 
@@ -20,11 +21,11 @@ O foco principal do desenvolvimento foi criar uma arquitetura escalável e reati
 
 | Categoria | Tecnologia | Implementação |
 | :--- | :--- | :--- |
-| **Frontend** | **Angular** | Framework principal com foco em componentes modulares e serviços reativos. |
-| **BaaS / Banco** | **Supabase** | PostgreSQL para armazenamento e JWT para sessões de usuário seguras. |
-| **Autenticação** | **Google OAuth2** | Integração de login social para facilitar o onboarding de usuários. |
-| **Inteligência** | **Google Gemini** | Engine de IA para processamento e geração de conteúdo. |
-| **Comunicação** | **HttpClient** | Consumo de APIs REST com tratamento de erros e interceptores. |
+| **Frontend** | **Angular 17** | Framework com componentes standalone modulares e gerenciamento reativo (RxJS). |
+| **BaaS / Banco** | **Supabase** | PostgreSQL com RLS para histórico seguro de conversas unificado ao usuário JWT. |
+| **Autenticação** | **Google OAuth2** | Integração via GoTrue de login unificado para segurança escalável. |
+| **Mente do Agente** | **Google Gemini Flash** | Loop autônomo com *Function/Tool Calling*. |
+| **Comunicação** | **Fetch/Streams** | Consumo robusto otimizado para *Chunk Streaming* com decodificação na árvore Angular. |
 
 ---
 
