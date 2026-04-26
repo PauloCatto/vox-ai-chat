@@ -16,9 +16,7 @@ export class ChatService {
   private readonly notify = inject(NotificationService);
 
   private supabase: SupabaseClient = this.supabaseService.getClient();
-  private apiKey: string = environment.geminiApiKey;
-
-  private readonly baseUrl = environment.chatApiUrl;
+  private readonly proxyUrl = environment.geminiProxyUrl;
 
   //Retry delays in ms: 2s → 5s → 10s
   private readonly RETRY_DELAYS = [2000, 5000, 10000];
@@ -97,13 +95,6 @@ export class ChatService {
     history: { role: string; content: string }[],
     image?: { mimeType: string, data: string }
   ): Promise<string | null> {
-    if (!this.apiKey) {
-      this.notify.error('Gemini API Key is missing.');
-      return null;
-    }
-
-    const url = `${this.baseUrl}:generateContent?key=${this.apiKey}`;
-
     const contents = history.map((msg) => ({
       role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
       parts: [{ text: msg.content }],
@@ -122,12 +113,12 @@ export class ChatService {
       parts: [{ text: "Você é um agente autônomo inteligente do Vox AI. Você possui ferramentas (tools) para buscar dados atualizados do mundo real. SEMPRE invoque as ferramentas apropriadas se o usuário perguntar as horas, clima, ou quiser realizar cálculos matemáticos avançados." }]
     };
 
-    const body = { contents, systemInstruction, tools: this.GEMINI_TOOLS };
+    const body = { contents, systemInstruction, tools: this.GEMINI_TOOLS, stream: false };
 
     for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
       try {
         const response = await lastValueFrom(
-          this.http.post<GeminiResponse>(url, body)
+          this.http.post<GeminiResponse>(this.proxyUrl, body)
         );
         return response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
       } catch (error: any) {
@@ -140,8 +131,8 @@ export class ChatService {
           continue;
         }
 
-        console.error('Erro na API:', error);
-        this.notify.error(`Erro ${status}: Verifique se o modelo está disponível na sua região.`);
+        console.error('Erro na API (proxy):', error);
+        this.notify.error(`Erro ${status}: Serviço temporariamente indisponível. Tente novamente.`);
         return null;
       }
     }
@@ -153,9 +144,7 @@ export class ChatService {
     history: { role: string; content: string }[],
     image?: { mimeType: string, data: string }
   ): AsyncIterable<string> {
-    if (!this.apiKey) return;
-
-    const url = `${this.baseUrl}:streamGenerateContent?key=${this.apiKey}`;
+    const url = this.proxyUrl;
 
     const systemInstruction = {
       parts: [{ text: "Você é um agente autônomo. Você possui ferramentas (tools) para buscar dados em tempo real. Priorize USAR A FERRAMENTA se o contexto pedir por horas locais, clima de cidades ou matemática. Nunca diga que não pode saber as horas sem antes tentar usar a ferramenta `get_current_time`." }]
@@ -183,7 +172,8 @@ export class ChatService {
       const bodyPayload = {
         contents,
         systemInstruction,
-        tools: this.GEMINI_TOOLS
+        tools: this.GEMINI_TOOLS,
+        stream: true
       };
 
       const body = JSON.stringify(bodyPayload);
