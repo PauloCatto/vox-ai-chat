@@ -110,7 +110,7 @@ export class ChatService {
     }
 
     const systemInstruction = {
-      parts: [{ text: "Você é um agente autônomo inteligente do Vox AI. Você possui ferramentas (tools) para buscar dados atualizados do mundo real. SEMPRE invoque as ferramentas apropriadas se o usuário perguntar as horas, clima, ou quiser realizar cálculos matemáticos avançados." }]
+      parts: [{ text: "Você é um agente autônomo inteligente do Vox AI. Você é um assistente virtual útil e capaz de responder a perguntas sobre qualquer assunto (conhecimentos gerais, ciência, etc). Você possui ferramentas (tools) para buscar dados atualizados do mundo real. SEMPRE invoque as ferramentas apropriadas se o usuário perguntar as horas, clima, ou quiser realizar cálculos matemáticos avançados. Para outros assuntos, tente compreender possíveis erros de digitação e responda usando seu amplo conhecimento interno." }]
     };
 
     const body = { contents, systemInstruction, tools: this.GEMINI_TOOLS, stream: false };
@@ -147,7 +147,7 @@ export class ChatService {
     const url = this.proxyUrl;
 
     const systemInstruction = {
-      parts: [{ text: "Você é um agente autônomo. Você possui ferramentas (tools) para buscar dados em tempo real. Priorize USAR A FERRAMENTA se o contexto pedir por horas locais, clima de cidades ou matemática. Nunca diga que não pode saber as horas sem antes tentar usar a ferramenta `get_current_time`." }]
+      parts: [{ text: "Você é um agente autônomo e assistente virtual geral do Vox AI. Responda a perguntas sobre qualquer assunto da melhor forma possível, interpretando possíveis erros de digitação. Você possui ferramentas (tools) para buscar dados em tempo real. Priorize USAR A FERRAMENTA se o contexto pedir por horas locais, clima de cidades ou matemática. Para todo o resto (como perguntas sobre medicamentos, conceitos, etc), responda normalmente usando seu próprio conhecimento." }]
     };
 
     let contents: any[] = history.map((msg) => ({

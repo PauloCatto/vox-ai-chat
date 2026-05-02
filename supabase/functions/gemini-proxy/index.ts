@@ -25,16 +25,18 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { contents, systemInstruction, tools, stream } = await req.json();
+    const { contents, systemInstruction, system_instruction, tools, stream } = await req.json();
 
     const endpoint = stream
       ? `${GEMINI_BASE_URL}:streamGenerateContent?key=${GEMINI_API_KEY}`
       : `${GEMINI_BASE_URL}:generateContent?key=${GEMINI_API_KEY}`;
 
+    const instruction = system_instruction || systemInstruction;
+
     const geminiResponse = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents, systemInstruction, tools }),
+      body: JSON.stringify({ contents, system_instruction: instruction, tools }),
     });
 
     if (stream) {
