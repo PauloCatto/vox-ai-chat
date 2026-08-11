@@ -91,6 +91,16 @@ export class ChatService {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  private async getAuthHeaders(): Promise<Record<string, string>> {
+    const { data } = await this.supabase.auth.getSession();
+    const token = data.session?.access_token || environment.supabaseKey;
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'apikey': environment.supabaseKey
+    };
+  }
+
   async getAiResponse(
     history: { role: string; content: string }[],
     image?: { mimeType: string, data: string }
@@ -114,11 +124,12 @@ export class ChatService {
     };
 
     const body = { contents, systemInstruction, tools: this.GEMINI_TOOLS, stream: false };
+    const headers = await this.getAuthHeaders();
 
     for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
       try {
         const response = await lastValueFrom(
-          this.http.post<GeminiResponse>(this.proxyUrl, body)
+          this.http.post<GeminiResponse>(this.proxyUrl, body, { headers })
         );
         return response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
       } catch (error: any) {
@@ -178,12 +189,13 @@ export class ChatService {
 
       const body = JSON.stringify(bodyPayload);
       let response: Response | null = null;
+      const headers = await this.getAuthHeaders();
 
       for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
         try {
           response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body,
           });
 
