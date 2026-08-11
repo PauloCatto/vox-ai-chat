@@ -29,7 +29,13 @@
       ]
     }
   },
+  "exclude": [
+    "supabase",
+    "node_modules",
+    "dist"
+  ],
   "angularCompilerOptions": {
+
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
